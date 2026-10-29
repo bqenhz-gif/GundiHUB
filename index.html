@@ -22,10 +22,10 @@
                             950: '#052e16',
                         },
                         dark: {
-                            bg: '#0f172a',
-                            card: '#1e293b',
-                            border: '#334155',
-                            input: '#0f172a'
+                            bg: '#090d16',
+                            card: '#131c31',
+                            border: '#1e293b',
+                            input: '#0b1324'
                         }
                     }
                 }
@@ -39,63 +39,67 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <style>
         .mc-btn {
-            box-shadow: inset -2px -4px 0px rgba(0,0,0,0.4), inset 2px 2px 0px rgba(255,255,255,0.2);
+            box-shadow: inset -2px -4px 0px rgba(0,0,0,0.5), inset 2px 2px 0px rgba(255,255,255,0.15);
+            transition: all 0.1s ease;
         }
         .mc-btn:active {
-            box-shadow: inset 2px 2px 0px rgba(0,0,0,0.4);
+            box-shadow: inset 2px 2px 0px rgba(0,0,0,0.5);
             transform: translateY(2px);
         }
         .custom-scrollbar::-webkit-scrollbar {
             width: 6px;
         }
         .custom-scrollbar::-webkit-scrollbar-track {
-            background: #0f172a;
+            background: #090d16;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #334155;
+            background: #1e293b;
             border-radius: 3px;
+        }
+        .glow-effect {
+            box-shadow: 0 0 25px -5px rgba(34, 197, 94, 0.15);
         }
     </style>
 </head>
 <body class="bg-dark-bg text-slate-100 min-h-screen font-sans flex flex-col antialiased selection:bg-brand-500 selection:text-white">
 
     <!-- LOGIN MODAL -->
-    <div id="login-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-        <div class="bg-dark-card border border-dark-border w-full max-w-md rounded-2xl p-6 shadow-2xl relative overflow-hidden">
-            <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-brand-500 via-emerald-400 to-amber-500"></div>
+    <div id="login-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4">
+        <div class="bg-dark-card border border-dark-border w-full max-w-md rounded-3xl p-8 shadow-2xl relative overflow-hidden glow-effect">
+            <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-brand-500 via-emerald-400 to-teal-500"></div>
             
-            <div class="text-center mb-6">
-                <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-brand-500/10 text-brand-500 mb-3 border border-brand-500/20">
-                    <i data-lucide="box" class="w-6 h-6"></i>
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-brand-500/10 text-brand-500 mb-4 border border-brand-500/20 shadow-inner">
+                    <i data-lucide="box" class="w-8 h-8"></i>
                 </div>
-                <h2 class="text-2xl font-bold text-white tracking-wide">Gundi Hub</h2>
-                <p class="text-slate-400 text-sm mt-1">Anmelden oder Account erstellen</p>
+                <h2 class="text-3xl font-extrabold text-white tracking-wide">Gundi Hub</h2>
+                <p class="text-slate-400 text-sm mt-1.5">Tritt dem Minecraft Server Community Hub bei</p>
             </div>
 
-            <form id="login-form" onsubmit="handleLogin(event)" class="space-y-4">
+            <form id="login-form" onsubmit="handleLogin(event)" class="space-y-5">
                 <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Minecraft In-Game Name (IGN)</label>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Minecraft In-Game Name (IGN)</label>
                     <div class="relative">
-                        <i data-lucide="user" class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"></i>
-                        <input type="text" id="login-ign" required placeholder="z.B. Steve_123" class="w-full bg-dark-input border border-dark-border rounded-xl pl-10 pr-4 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-brand-500 transition">
+                        <i data-lucide="user" class="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500"></i>
+                        <input type="text" id="login-ign" required placeholder="z.B. Bqen_" class="w-full bg-dark-input border border-dark-border rounded-xl pl-11 pr-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-brand-500 transition shadow-inner">
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Persönlicher PIN (4–6 Zahlen)</label>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Persönlicher PIN (4–6 Zahlen)</label>
                     <div class="relative">
-                        <i data-lucide="lock" class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"></i>
-                        <input type="password" id="login-pin" required maxlength="6" pattern="[0-9]{4,6}" placeholder="••••" class="w-full bg-dark-input border border-dark-border rounded-xl pl-10 pr-4 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-brand-500 transition">
+                        <i data-lucide="lock" class="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500"></i>
+                        <input type="password" id="login-pin" required maxlength="6" pattern="[0-9]{4,6}" placeholder="••••" class="w-full bg-dark-input border border-dark-border rounded-xl pl-11 pr-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-brand-500 transition shadow-inner">
                     </div>
                 </div>
 
-                <button type="submit" class="w-full bg-brand-600 hover:bg-brand-500 text-white font-medium py-3 rounded-xl mc-btn transition flex items-center justify-center gap-2">
+                <button type="submit" class="w-full bg-brand-600 hover:bg-brand-500 text-white font-semibold py-3.5 rounded-xl mc-btn transition flex items-center justify-center gap-2 shadow-lg shadow-brand-600/20">
                     <i data-lucide="log-in" class="w-5 h-5"></i>
                     <span>Einloggen / Registrieren</span>
                 </button>
 
-                <div class="text-center mt-3">
-                    <button type="button" onclick="handleResetPin()" class="text-xs text-slate-400 hover:text-brand-500 underline transition">PIN vergessen? Zurücksetzen</button>
+                <div class="text-center pt-2">
+                    <button type="button" onclick="handleResetPin()" class="text-xs text-slate-400 hover:text-brand-400 underline transition">PIN vergessen? Zurücksetzen</button>
                 </div>
             </form>
         </div>
@@ -104,69 +108,165 @@
     <!-- MAIN APP CONTENT -->
     <div id="app" class="hidden flex-col min-h-screen">
         <!-- NAVBAR -->
-        <header class="border-b border-dark-border bg-dark-card/50 backdrop-blur sticky top-0 z-40">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <div class="p-2 bg-brand-500/10 border border-brand-500/20 rounded-lg text-brand-500">
-                        <i data-lucide="box" class="w-6 h-6"></i>
+        <header class="border-b border-dark-border bg-dark-card/80 backdrop-blur-md sticky top-0 z-40">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+                <div class="flex items-center gap-3.5">
+                    <div class="p-2.5 bg-brand-500/10 border border-brand-500/20 rounded-xl text-brand-500 shadow-inner">
+                        <i data-lucide="box" class="w-7 h-7"></i>
                     </div>
                     <div>
-                        <h1 class="text-lg font-bold text-white leading-tight">Gundi Hub</h1>
-                        <p class="text-xs text-slate-400 hidden sm:block">FWM Attack Project Board</p>
+                        <h1 class="text-xl font-black text-white tracking-wider">GUNDI HUB</h1>
+                        <p class="text-xs text-brand-400 font-medium tracking-wide">friendswithmoney.net</p>
                     </div>
                 </div>
 
                 <!-- Navigation Tabs -->
-                <nav class="flex items-center bg-dark-input p-1 rounded-xl border border-dark-border">
-                    <button onclick="switchTab('projects')" id="tab-btn-projects" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-brand-600 transition">
+                <nav class="hidden md:flex items-center bg-dark-input p-1.5 rounded-2xl border border-dark-border shadow-inner">
+                    <button onclick="switchTab('home')" id="tab-btn-home" class="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white bg-brand-600 transition shadow-md">
+                        <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+                        <span>Übersicht</span>
+                    </button>
+                    <button onclick="switchTab('projects')" id="tab-btn-projects" class="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white transition">
                         <i data-lucide="pickaxe" class="w-4 h-4"></i>
-                        <span class="hidden sm:inline">Projekte</span>
+                        <span>Bauprojekte</span>
                     </button>
-                    <button onclick="switchTab('items')" id="tab-btn-items" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition">
+                    <button onclick="switchTab('items')" id="tab-btn-items" class="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white transition">
                         <i data-lucide="shopping-bag" class="w-4 h-4"></i>
-                        <span class="hidden sm:inline">Bestellungen</span>
+                        <span>Bestellungen</span>
                     </button>
-                    <button onclick="switchTab('gallery')" id="tab-btn-gallery" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition">
+                    <button onclick="switchTab('gallery')" id="tab-btn-gallery" class="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white transition">
                         <i data-lucide="image" class="w-4 h-4"></i>
-                        <span class="hidden sm:inline">Inspiration</span>
+                        <span>Inspiration</span>
                     </button>
                 </nav>
 
                 <!-- User Profile -->
                 <div class="flex items-center gap-3">
-                    <div class="flex items-center gap-2 bg-dark-card border border-dark-border px-3 py-1.5 rounded-xl">
-                        <img id="user-avatar" src="" alt="Avatar" class="w-6 h-6 rounded-md">
-                        <span id="user-display-name" class="text-xs font-semibold text-slate-200"></span>
+                    <div class="flex items-center gap-2.5 bg-dark-input border border-dark-border px-3.5 py-2 rounded-2xl shadow-inner">
+                        <img id="user-avatar" src="" alt="Avatar" class="w-7 h-7 rounded-lg border border-dark-border">
+                        <span id="user-display-name" class="text-xs font-bold text-slate-200"></span>
                     </div>
-                    <button onclick="logout()" class="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-xl border border-transparent hover:border-red-500/20 transition">
+                    <button onclick="logout()" title="Abmelden" class="p-2.5 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-2xl border border-dark-border hover:border-red-500/20 transition">
                         <i data-lucide="log-out" class="w-5 h-5"></i>
                     </button>
                 </div>
             </div>
+            <!-- Mobile Navigation Bar -->
+            <div class="flex md:hidden items-center justify-around bg-dark-input border-t border-dark-border p-2">
+                <button onclick="switchTab('home')" id="mobile-tab-btn-home" class="p-2 rounded-xl text-white bg-brand-600"><i data-lucide="layout-dashboard" class="w-5 h-5"></i></button>
+                <button onclick="switchTab('projects')" id="mobile-tab-btn-projects" class="p-2 rounded-xl text-slate-400"><i data-lucide="pickaxe" class="w-5 h-5"></i></button>
+                <button onclick="switchTab('items')" id="mobile-tab-btn-items" class="p-2 rounded-xl text-slate-400"><i data-lucide="shopping-bag" class="w-5 h-5"></i></button>
+                <button onclick="switchTab('gallery')" id="mobile-tab-btn-gallery" class="p-2 rounded-xl text-slate-400"><i data-lucide="image" class="w-5 h-5"></i></button>
+            </div>
         </header>
 
         <!-- SERVER INFO BANNER -->
-        <div class="bg-gradient-to-r from-emerald-950/40 via-dark-card to-dark-bg border-b border-dark-border py-2.5 px-4 text-center text-xs flex items-center justify-center gap-3 flex-wrap">
-            <span class="flex items-center gap-1.5 text-slate-300 font-medium">
-                <span class="w-2 h-2 rounded-full bg-brand-500 animate-pulse"></span> Server IP:
-                <code class="bg-dark-input px-2 py-0.5 rounded border border-dark-border text-brand-500 font-mono">friendswithmoney.net</code>
+        <div class="bg-gradient-to-r from-emerald-950/60 via-dark-card to-dark-bg border-b border-dark-border py-3 px-4 text-center text-xs flex items-center justify-center gap-4 flex-wrap shadow-inner">
+            <span class="flex items-center gap-2 text-slate-200 font-semibold">
+                <span class="w-2.5 h-2.5 rounded-full bg-brand-500 animate-pulse shadow-lg shadow-brand-500/50"></span> Server IP:
+                <code class="bg-dark-input px-3 py-1 rounded-lg border border-dark-border text-brand-400 font-mono font-bold tracking-wider">friendswithmoney.net</code>
             </span>
-            <button onclick="copyIp()" class="text-slate-400 hover:text-white underline flex items-center gap-1 transition">
-                <i data-lucide="copy" class="w-3.5 h-3.5"></i> IP Kopieren
+            <button onclick="copyIp()" class="bg-dark-input hover:bg-dark-border text-slate-300 hover:text-white px-3 py-1.5 rounded-lg border border-dark-border flex items-center gap-1.5 transition text-xs font-medium">
+                <i data-lucide="copy" class="w-3.5 h-3.5 text-brand-400"></i> IP Kopieren
             </button>
         </div>
 
         <!-- MAIN CONTAINER -->
         <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
             
-            <!-- PROJECTS TAB -->
-            <section id="tab-projects" class="space-y-6">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <h2 class="text-xl font-bold text-white">Bauprojekte & Ziele</h2>
-                        <p class="text-xs text-slate-400">Verwalte Aufgaben und Fortschritte auf dem Server</p>
+            <!-- HOME / DASHBOARD TAB -->
+            <section id="tab-home" class="space-y-8">
+                <!-- Hero Banner -->
+                <div class="relative bg-gradient-to-br from-dark-card via-dark-input to-emerald-950/30 border border-dark-border rounded-3xl p-8 overflow-hidden shadow-2xl">
+                    <div class="absolute -right-10 -bottom-10 opacity-10 pointer-events-none">
+                        <i data-lucide="box" class="w-80 h-80 text-brand-500"></i>
                     </div>
-                    <button onclick="openModal('project-modal')" class="bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold px-4 py-2.5 rounded-xl mc-btn transition flex items-center gap-2">
+                    <div class="relative z-10 max-w-2xl">
+                        <div class="inline-flex items-center gap-2 bg-brand-500/10 text-brand-400 px-3 py-1 rounded-full text-xs font-bold border border-brand-500/20 mb-4">
+                            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> FWM Attack Community
+                        </div>
+                        <h2 class="text-3xl sm:text-4xl font-black text-white tracking-tight mb-3">Willkommen zurück im Gundi Hub!</h2>
+                        <p class="text-slate-300 text-sm sm:text-base leading-relaxed mb-6">
+                            Koordiniert eure Bauprojekte, teilt Inspirationsbilder, verwaltet Item-Bestellungen und baut gemeinsam das ultimative Minecraft-Imperium auf <code class="text-brand-400 font-mono">friendswithmoney.net</code>.
+                        </p>
+                        <div class="flex flex-wrap gap-3">
+                            <button onclick="switchTab('projects')" class="bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold px-5 py-3 rounded-xl mc-btn transition flex items-center gap-2 shadow-lg shadow-brand-600/20">
+                                <i data-lucide="pickaxe" class="w-4 h-4"></i> Zu den Bauprojekten
+                            </button>
+                            <button onclick="switchTab('items')" class="bg-dark-input hover:bg-dark-border text-slate-200 text-xs font-bold px-5 py-3 rounded-xl border border-dark-border transition flex items-center gap-2">
+                                <i data-lucide="shopping-bag" class="w-4 h-4 text-brand-400"></i> Item-Bestellungen öffnen
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                    <div class="bg-dark-card border border-dark-border rounded-2xl p-6 shadow-xl flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Aktive Bauprojekte</p>
+                            <h3 id="stat-projects-count" class="text-3xl font-black text-white">0</h3>
+                        </div>
+                        <div class="p-3 bg-brand-500/10 text-brand-400 rounded-2xl border border-brand-500/20">
+                            <i data-lucide="pickaxe" class="w-6 h-6"></i>
+                        </div>
+                    </div>
+                    <div class="bg-dark-card border border-dark-border rounded-2xl p-6 shadow-xl flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Offene Bestellungen</p>
+                            <h3 id="stat-items-count" class="text-3xl font-black text-white">0</h3>
+                        </div>
+                        <div class="p-3 bg-amber-500/10 text-amber-400 rounded-2xl border border-amber-500/20">
+                            <i data-lucide="shopping-bag" class="w-6 h-6"></i>
+                        </div>
+                    </div>
+                    <div class="bg-dark-card border border-dark-border rounded-2xl p-6 shadow-xl flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Inspirationsbilder</p>
+                            <h3 id="stat-gallery-count" class="text-3xl font-black text-white">0</h3>
+                        </div>
+                        <div class="p-3 bg-blue-500/10 text-blue-400 rounded-2xl border border-blue-500/20">
+                            <i data-lucide="image" class="w-6 h-6"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Overview Lists -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-dark-card border border-dark-border rounded-3xl p-6 shadow-xl">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-bold text-white text-base flex items-center gap-2">
+                                <i data-lucide="clock" class="w-4 h-4 text-brand-400"></i> Aktuelle Projekte
+                            </h3>
+                            <button onclick="switchTab('projects')" class="text-xs text-brand-400 hover:underline font-semibold">Alle anzeigen</button>
+                        </div>
+                        <div id="home-projects-preview" class="space-y-3">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+
+                    <div class="bg-dark-card border border-dark-border rounded-3xl p-6 shadow-xl">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-bold text-white text-base flex items-center gap-2">
+                                <i data-lucide="package-check" class="w-4 h-4 text-brand-400"></i> Dringende Item-Wünsche
+                            </h3>
+                            <button onclick="switchTab('items')" class="text-xs text-brand-400 hover:underline font-semibold">Alle anzeigen</button>
+                        </div>
+                        <div id="home-items-preview" class="space-y-3">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PROJECTS TAB -->
+            <section id="tab-projects" class="hidden space-y-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-2xl font-extrabold text-white">Bauprojekte & Ziele</h2>
+                        <p class="text-xs text-slate-400 mt-1">Verwalte Aufgaben, Standorte und benötigte Materialien</p>
+                    </div>
+                    <button onclick="openModal('project-modal')" class="bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold px-5 py-3 rounded-xl mc-btn transition flex items-center justify-center gap-2 shadow-lg shadow-brand-600/20">
                         <i data-lucide="plus" class="w-4 h-4"></i> Neuer Bauauftrag
                     </button>
                 </div>
@@ -178,26 +278,26 @@
 
             <!-- ITEMS TAB -->
             <section id="tab-items" class="hidden space-y-6">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
-                        <h2 class="text-xl font-bold text-white">Item-Bestellungen & Ressourcen</h2>
-                        <p class="text-xs text-slate-400">Trage ein, was du an Material benötigst oder liefern kannst</p>
+                        <h2 class="text-2xl font-extrabold text-white">Item-Bestellungen & Ressourcen</h2>
+                        <p class="text-xs text-slate-400 mt-1">Spezifische Materialwünsche für Farmen und Bauwerke</p>
                     </div>
-                    <button onclick="openModal('item-modal')" class="bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold px-4 py-2.5 rounded-xl mc-btn transition flex items-center gap-2">
-                        <i data-lucide="plus" class="w-4 h-4"></i> Neue Bestellung
+                    <button onclick="openModal('item-modal')" class="bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold px-5 py-3 rounded-xl mc-btn transition flex items-center justify-center gap-2 shadow-lg shadow-brand-600/20">
+                        <i data-lucide="plus" class="w-4 h-4"></i> Spezifische Bestellung aufgeben
                     </button>
                 </div>
 
-                <div class="bg-dark-card border border-dark-border rounded-2xl overflow-hidden shadow-xl">
+                <div class="bg-dark-card border border-dark-border rounded-3xl overflow-hidden shadow-2xl">
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse">
                             <thead>
-                                <tr class="bg-dark-input/50 text-slate-400 text-xs font-semibold uppercase border-b border-dark-border">
-                                    <th class="p-4">Item</th>
-                                    <th class="p-4">Menge</th>
-                                    <th class="p-4">Besteller</th>
-                                    <th class="p-4">Status</th>
-                                    <th class="p-4 text-right">Aktion</th>
+                                <tr class="bg-dark-input/80 text-slate-400 text-xs font-bold uppercase tracking-wider border-b border-dark-border">
+                                    <th class="p-5">Spezifisches Item</th>
+                                    <th class="p-5">Menge / Details</th>
+                                    <th class="p-5">Besteller</th>
+                                    <th class="p-5">Status</th>
+                                    <th class="p-5 text-right">Aktion</th>
                                 </tr>
                             </thead>
                             <tbody id="items-list" class="divide-y divide-dark-border text-sm">
@@ -210,17 +310,17 @@
 
             <!-- GALLERY TAB -->
             <section id="tab-gallery" class="hidden space-y-6">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
-                        <h2 class="text-xl font-bold text-white">Inspiration & Baupläne</h2>
-                        <p class="text-xs text-slate-400">Bilder von Vorlagen, Skizzen oder fertigen Bauten</p>
+                        <h2 class="text-2xl font-extrabold text-white">Inspiration & Baupläne</h2>
+                        <p class="text-xs text-slate-400 mt-1">Sammle Ideen, Skizzen und Vorlagen für den Server</p>
                     </div>
-                    <button onclick="openModal('gallery-modal')" class="bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold px-4 py-2.5 rounded-xl mc-btn transition flex items-center gap-2">
+                    <button onclick="openModal('gallery-modal')" class="bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold px-5 py-3 rounded-xl mc-btn transition flex items-center justify-center gap-2 shadow-lg shadow-brand-600/20">
                         <i data-lucide="plus" class="w-4 h-4"></i> Bild hinzufügen
                     </button>
                 </div>
 
-                <div id="gallery-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <div id="gallery-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
                     <!-- Dynamic Render -->
                 </div>
             </section>
@@ -229,80 +329,84 @@
     </div>
 
     <!-- MODAL: PROJECT -->
-    <div id="project-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-        <div class="bg-dark-card border border-dark-border w-full max-w-lg rounded-2xl p-6 shadow-2xl relative">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-bold text-white">Neues Bauprojekt anlegen</h3>
-                <button onclick="closeModal('project-modal')" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+    <div id="project-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/85 backdrop-blur-md p-4">
+        <div class="bg-dark-card border border-dark-border w-full max-w-lg rounded-3xl p-7 shadow-2xl relative max-h-[90vh] overflow-y-auto custom-scrollbar">
+            <div class="flex justify-between items-center mb-5 pb-3 border-b border-dark-border">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2"><i data-lucide="pickaxe" class="w-5 h-5 text-brand-400"></i> Neues Bauprojekt anlegen</h3>
+                <button onclick="closeModal('project-modal')" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-dark-input"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
             <form onsubmit="saveProject(event)" class="space-y-4">
                 <div>
-                    <label class="block text-xs text-slate-400 mb-1">Titel des Projekts</label>
-                    <input type="text" id="project-title" required placeholder="z.B. Mittelalterliche Burg" class="w-full bg-dark-input border border-dark-border rounded-xl px-3 py-2 text-white focus:outline-none focus:border-brand-500">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">Titel des Projekts</label>
+                    <input type="text" id="project-title" required placeholder="z.B. Server Spawn Stadt" class="w-full bg-dark-input border border-dark-border rounded-xl px-4 py-2.5 text-white placeholder-slate-600 focus:outline-none focus:border-brand-500 transition">
                 </div>
                 <div>
-                    <label class="block text-xs text-slate-400 mb-1">Koordinaten / Standort (optional)</label>
-                    <input type="text" id="project-coords" placeholder="X: 120, Y: 64, Z: -450" class="w-full bg-dark-input border border-dark-border rounded-xl px-3 py-2 text-white focus:outline-none focus:border-brand-500">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">Koordinaten / Standort (optional)</label>
+                    <input type="text" id="project-coords" placeholder="X: 120, Y: 64, Z: -450" class="w-full bg-dark-input border border-dark-border rounded-xl px-4 py-2.5 text-white placeholder-slate-600 focus:outline-none focus:border-brand-500 transition">
                 </div>
                 <div>
-                    <label class="block text-xs text-slate-400 mb-1">Beschreibung</label>
-                    <textarea id="project-desc" rows="3" placeholder="Kurze Details zum Bauplan..." class="w-full bg-dark-input border border-dark-border rounded-xl px-3 py-2 text-white focus:outline-none focus:border-brand-500"></textarea>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">Beschreibung</label>
+                    <textarea id="project-desc" rows="3" placeholder="Kurze Details zum Bauvorhaben..." class="w-full bg-dark-input border border-dark-border rounded-xl px-4 py-2.5 text-white placeholder-slate-600 focus:outline-none focus:border-brand-500 transition custom-scrollbar"></textarea>
                 </div>
                 <div>
-                    <label class="block text-xs text-slate-400 mb-1">Aufgaben (Kommagetrennt)</label>
-                    <input type="text" id="project-tasks" placeholder="Fundament gießen, Dach decken, Dekoration" class="w-full bg-dark-input border border-dark-border rounded-xl px-3 py-2 text-white focus:outline-none focus:border-brand-500">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">Bild-URL für benötigte Materialien / Vorlage (optional)</label>
+                    <input type="url" id="project-mat-image" placeholder="https://beispiel.de/materialbild.png" class="w-full bg-dark-input border border-dark-border rounded-xl px-4 py-2.5 text-white placeholder-slate-600 focus:outline-none focus:border-brand-500 transition">
                 </div>
-                <div class="flex justify-end gap-2 pt-2">
-                    <button type="button" onclick="closeModal('project-modal')" class="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white">Abbrechen</button>
-                    <button type="submit" class="bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold px-4 py-2 rounded-xl mc-btn">Speichern</button>
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">Aufgaben (Kommagetrennt)</label>
+                    <input type="text" id="project-tasks" placeholder="Fundament gießen, Dach decken, Beleuchtung" class="w-full bg-dark-input border border-dark-border rounded-xl px-4 py-2.5 text-white placeholder-slate-600 focus:outline-none focus:border-brand-500 transition">
+                </div>
+                <div class="flex justify-end gap-3 pt-4 border-t border-dark-border">
+                    <button type="button" onclick="closeModal('project-modal')" class="px-5 py-2.5 text-xs font-bold text-slate-400 hover:text-white transition">Abbrechen</button>
+                    <button type="submit" class="bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold px-6 py-2.5 rounded-xl mc-btn shadow-md">Projekt speichern</button>
                 </div>
             </form>
         </div>
     </div>
 
     <!-- MODAL: ITEM -->
-    <div id="item-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-        <div class="bg-dark-card border border-dark-border w-full max-w-md rounded-2xl p-6 shadow-2xl relative">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-bold text-white">Item-Bestellung aufgeben</h3>
-                <button onclick="closeModal('item-modal')" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+    <div id="item-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/85 backdrop-blur-md p-4">
+        <div class="bg-dark-card border border-dark-border w-full max-w-md rounded-3xl p-7 shadow-2xl relative">
+            <div class="flex justify-between items-center mb-5 pb-3 border-b border-dark-border">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2"><i data-lucide="shopping-bag" class="w-5 h-5 text-brand-400"></i> Spezifische Item-Bestellung</h3>
+                <button onclick="closeModal('item-modal')" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-dark-input"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
             <form onsubmit="saveItem(event)" class="space-y-4">
                 <div>
-                    <label class="block text-xs text-slate-400 mb-1">Item-Name</label>
-                    <input type="text" id="item-name" required placeholder="z.B. Eichenholz, Diamanten" class="w-full bg-dark-input border border-dark-border rounded-xl px-3 py-2 text-white focus:outline-none focus:border-brand-500">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">Spezifischer Item-Name</label>
+                    <input type="text" id="item-name" required placeholder="z.B. Netherit-Barren, Eichenstämme" class="w-full bg-dark-input border border-dark-border rounded-xl px-4 py-2.5 text-white placeholder-slate-600 focus:outline-none focus:border-brand-500 transition">
                 </div>
                 <div>
-                    <label class="block text-xs text-slate-400 mb-1">Benötigte Menge</label>
-                    <input type="text" id="item-amount" required placeholder="z.B. 5 Stacks, 64 Stück" class="w-full bg-dark-input border border-dark-border rounded-xl px-3 py-2 text-white focus:outline-none focus:border-brand-500">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">Spezifische Menge / Einheit</label>
+                    <input type="text" id="item-amount" required placeholder="z.B. Genau 3 Stacks & 12 Stück" class="w-full bg-dark-input border border-dark-border rounded-xl px-4 py-2.5 text-white placeholder-slate-600 focus:outline-none focus:border-brand-500 transition">
                 </div>
-                <div class="flex justify-end gap-2 pt-2">
-                    <button type="button" onclick="closeModal('item-modal')" class="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white">Abbrechen</button>
-                    <button type="submit" class="bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold px-4 py-2 rounded-xl mc-btn">Bestellen</button>
+                <div class="flex justify-end gap-3 pt-4 border-t border-dark-border">
+                    <button type="button" onclick="closeModal('item-modal')" class="px-5 py-2.5 text-xs font-bold text-slate-400 hover:text-white transition">Abbrechen</button>
+                    <button type="submit" class="bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold px-6 py-2.5 rounded-xl mc-btn shadow-md">Bestellung aufgeben</button>
                 </div>
             </form>
         </div>
     </div>
 
     <!-- MODAL: GALLERY -->
-    <div id="gallery-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-        <div class="bg-dark-card border border-dark-border w-full max-w-md rounded-2xl p-6 shadow-2xl relative">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-bold text-white">Inspirationsbild teilen</h3>
-                <button onclick="closeModal('gallery-modal')" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+    <div id="gallery-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/85 backdrop-blur-md p-4">
+        <div class="bg-dark-card border border-dark-border w-full max-w-md rounded-3xl p-7 shadow-2xl relative">
+            <div class="flex justify-between items-center mb-5 pb-3 border-b border-dark-border">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2"><i data-lucide="image" class="w-5 h-5 text-brand-400"></i> Inspirationsbild teilen</h3>
+                <button onclick="closeModal('gallery-modal')" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-dark-input"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
             <form onsubmit="saveGallery(event)" class="space-y-4">
                 <div>
-                    <label class="block text-xs text-slate-400 mb-1">Bild-Titel</label>
-                    <input type="text" id="gallery-title" required placeholder="z.B. Nether-Portal Idee" class="w-full bg-dark-input border border-dark-border rounded-xl px-3 py-2 text-white focus:outline-none focus:border-brand-500">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">Bild-Titel</label>
+                    <input type="text" id="gallery-title" required placeholder="z.B. Mittelalterlicher Turm" class="w-full bg-dark-input border border-dark-border rounded-xl px-4 py-2.5 text-white placeholder-slate-600 focus:outline-none focus:border-brand-500 transition">
                 </div>
                 <div>
-                    <label class="block text-xs text-slate-400 mb-1">Bild-URL (Link zum Bild)</label>
-                    <input type="url" id="gallery-url" required placeholder="https://..." class="w-full bg-dark-input border border-dark-border rounded-xl px-3 py-2 text-white focus:outline-none focus:border-brand-500">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">Bild-URL (Direktlink)</label>
+                    <input type="url" id="gallery-url" required placeholder="https://..." class="w-full bg-dark-input border border-dark-border rounded-xl px-4 py-2.5 text-white placeholder-slate-600 focus:outline-none focus:border-brand-500 transition">
                 </div>
-                <div class="flex justify-end gap-2 pt-2">
-                    <button type="button" onclick="closeModal('gallery-modal')" class="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white">Abbrechen</button>
-                    <button type="submit" class="bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold px-4 py-2 rounded-xl mc-btn">Hinzufügen</button>
+                <div class="flex justify-end gap-3 pt-4 border-t border-dark-border">
+                    <button type="button" onclick="closeModal('gallery-modal')" class="px-5 py-2.5 text-xs font-bold text-slate-400 hover:text-white transition">Abbrechen</button>
+                    <button type="submit" class="bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold px-6 py-2.5 rounded-xl mc-btn shadow-md">Bild hinzufügen</button>
                 </div>
             </form>
         </div>
@@ -310,7 +414,6 @@
 
     <!-- APPLICATION LOGIC -->
     <script>
-        // FIREBASE CONFIGURATION aus deinem Screenshot
         const firebaseConfig = {
             apiKey: "AIzaSyR8GM4yh1w7igk04HLbSM4MJXazl1G3SEY",
             authDomain: "gundihub.firebaseapp.com",
@@ -321,7 +424,6 @@
             measurementId: "G-D16WTN73GJ"
         };
 
-        // Initialize Firebase
         let db = null;
         let isCloudMode = false;
 
@@ -330,16 +432,14 @@
             db = firebase.firestore();
             isCloudMode = true;
         } catch(e) {
-            console.warn("Firebase Initialization Error, falling back to local mode:", e);
+            console.warn("Firebase Init Error:", e);
         }
 
-        // APP STATE
         let currentUser = null;
         let localProjects = [];
         let localItems = [];
         let localGallery = [];
 
-        // INIT
         window.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
             const savedUser = localStorage.getItem('gundihub_user');
@@ -349,7 +449,6 @@
             }
         });
 
-        // AUTH HANDLERS
         async function handleLogin(e) {
             e.preventDefault();
             const ign = document.getElementById('login-ign').value.trim();
@@ -371,14 +470,13 @@
                             alert("Falscher PIN für diesen Minecraft-Namen!");
                         }
                     } else {
-                        // Register new user
                         await userRef.set({ ign, pin, createdAt: new Date() });
                         currentUser = { ign };
                         completeLogin();
                     }
                 } catch(err) {
                     console.error("Cloud login error:", err);
-                    alert("Verbindungsfehler zur Datenbank. Es wird lokal eingeloggt.");
+                    alert("Verbindungsfehler zur Datenbank. Lokal eingeloggt.");
                     currentUser = { ign };
                     completeLogin();
                 }
@@ -399,7 +497,7 @@
             if (!ign) return;
             const newPin = prompt("Gib deinen neuen 4-6 stelligen PIN ein:");
             if (!newPin || newPin.length < 4 || newPin.length > 6) {
-                alert("Ungültiger PIN. Bitte 4 bis 6 Zahlen eingeben.");
+                alert("Ungültiger PIN (4-6 Zahlen).");
                 return;
             }
 
@@ -407,12 +505,12 @@
                 try {
                     const userRef = db.collection('users').doc(ign.toLowerCase());
                     await userRef.set({ ign, pin: newPin }, { merge: true });
-                    alert("Dein PIN wurde erfolgreich zurückgesetzt! Du kannst dich jetzt damit einloggen.");
+                    alert("PIN erfolgreich zurückgesetzt! Du kannst dich jetzt einloggen.");
                 } catch(e) {
-                    alert("Fehler beim Zurücksetzen des PINs.");
+                    alert("Fehler beim Zurücksetzen.");
                 }
             } else {
-                alert("PIN zurückgesetzt! Melde dich einfach neu an.");
+                alert("PIN zurückgesetzt!");
             }
         }
 
@@ -428,22 +526,25 @@
             document.getElementById('app').classList.add('flex');
 
             document.getElementById('user-display-name').textContent = currentUser.ign;
-            document.getElementById('user-avatar').src = `https://mc-heads.net/avatar/${currentUser.ign}/24`;
+            document.getElementById('user-avatar').src = `https://mc-heads.net/avatar/${currentUser.ign}/28`;
 
             loadData();
         }
 
-        // NAVIGATION
         function switchTab(tab) {
-            ['projects', 'items', 'gallery'].forEach(t => {
+            ['home', 'projects', 'items', 'gallery'].forEach(t => {
                 document.getElementById(`tab-${t}`).classList.add('hidden');
                 const btn = document.getElementById(`tab-btn-${t}`);
-                btn.className = "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition";
+                if (btn) btn.className = "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white transition";
+                const mobBtn = document.getElementById(`mobile-tab-btn-${t}`);
+                if (mobBtn) mobBtn.className = "p-2 rounded-xl text-slate-400";
             });
 
             document.getElementById(`tab-${tab}`).classList.remove('hidden');
             const activeBtn = document.getElementById(`tab-btn-${tab}`);
-            activeBtn.className = "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-brand-600 transition";
+            if (activeBtn) activeBtn.className = "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white bg-brand-600 transition shadow-md";
+            const activeMobBtn = document.getElementById(`mobile-tab-btn-${tab}`);
+            if (activeMobBtn) activeMobBtn.className = "p-2 rounded-xl text-white bg-brand-600";
         }
 
         function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
@@ -454,47 +555,88 @@
             alert("Server-IP (friendswithmoney.net) in die Zwischenablage kopiert!");
         }
 
-        // DATA LOADING & RENDERING
         function loadData() {
             if (isCloudMode) {
                 db.collection('projects').onSnapshot(snapshot => {
                     localProjects = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    renderProjects();
+                    renderAll();
                 });
                 db.collection('items').onSnapshot(snapshot => {
                     localItems = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    renderItems();
+                    renderAll();
                 });
                 db.collection('gallery').onSnapshot(snapshot => {
                     localGallery = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    renderGallery();
+                    renderAll();
                 });
             } else {
                 localProjects = JSON.parse(localStorage.getItem('gundihub_projects') || '[]');
                 localItems = JSON.parse(localStorage.getItem('gundihub_items') || '[]');
                 localGallery = JSON.parse(localStorage.getItem('gundihub_gallery') || '[]');
-                renderProjects(); renderItems(); renderGallery();
+                renderAll();
             }
         }
 
-        // PROJECTS
+        function renderAll() {
+            renderHome();
+            renderProjects();
+            renderItems();
+            renderGallery();
+        }
+
+        function renderHome() {
+            document.getElementById('stat-projects-count').textContent = localProjects.length;
+            document.getElementById('stat-items-count').textContent = localItems.filter(i => i.status !== 'Geliefert').length;
+            document.getElementById('stat-gallery-count').textContent = localGallery.length;
+
+            const projPreview = document.getElementById('home-projects-preview');
+            if (localProjects.length === 0) {
+                projPreview.innerHTML = `<p class="text-xs text-slate-500 italic">Keine Projekte vorhanden.</p>`;
+            } else {
+                projPreview.innerHTML = localProjects.slice(0, 3).map(p => `
+                    <div class="bg-dark-input/50 border border-dark-border p-3 rounded-2xl flex items-center justify-between">
+                        <div>
+                            <h4 class="font-bold text-white text-xs">${p.title}</h4>
+                            <p class="text-[10px] text-slate-400 mt-0.5">${p.coords || 'Keine Koordinaten'}</p>
+                        </div>
+                        <span class="text-[10px] bg-brand-500/10 text-brand-400 px-2 py-1 rounded-lg border border-brand-500/20 font-semibold">${p.author}</span>
+                    </div>
+                `).join('');
+            }
+
+            const itemPreview = document.getElementById('home-items-preview');
+            if (localItems.length === 0) {
+                itemPreview.innerHTML = `<p class="text-xs text-slate-500 italic">Keine Bestellungen offen.</p>`;
+            } else {
+                itemPreview.innerHTML = localItems.slice(0, 3).map(i => `
+                    <div class="bg-dark-input/50 border border-dark-border p-3 rounded-2xl flex items-center justify-between">
+                        <div>
+                            <h4 class="font-bold text-white text-xs">${i.name} <span class="text-slate-400 font-normal">(${i.amount})</span></h4>
+                            <p class="text-[10px] text-slate-400 mt-0.5">Von ${i.author}</p>
+                        </div>
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${i.status === 'Geliefert' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : i.status === 'In Arbeit' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-slate-500/10 text-slate-400 border border-slate-500/20'}">${i.status}</span>
+                    </div>
+                `).join('');
+            }
+        }
+
         async function saveProject(e) {
             e.preventDefault();
             const title = document.getElementById('project-title').value;
             const coords = document.getElementById('project-coords').value;
             const desc = document.getElementById('project-desc').value;
+            const matImage = document.getElementById('project-mat-image').value;
             const tasksRaw = document.getElementById('project-tasks').value;
 
             const tasks = tasksRaw ? tasksRaw.split(',').map(t => ({ text: t.trim(), done: false })) : [];
-
-            const projectData = { title, coords, desc, tasks, author: currentUser.ign, createdAt: new Date() };
+            const projectData = { title, coords, desc, matImage, tasks, author: currentUser.ign, createdAt: new Date() };
 
             if (isCloudMode) {
                 await db.collection('projects').add(projectData);
             } else {
                 localProjects.push({ id: Date.now().toString(), ...projectData });
                 localStorage.setItem('gundihub_projects', JSON.stringify(localProjects));
-                renderProjects();
+                renderAll();
             }
 
             closeModal('project-modal');
@@ -510,46 +652,54 @@
                 await db.collection('projects').doc(projectId).update({ tasks: proj.tasks });
             } else {
                 localStorage.setItem('gundihub_projects', JSON.stringify(localProjects));
-                renderProjects();
+                renderAll();
             }
         }
 
         function renderProjects() {
             const list = document.getElementById('projects-list');
             if (localProjects.length === 0) {
-                list.innerHTML = `<p class="text-slate-500 text-xs italic col-span-full">Noch keine Bauprojekte vorhanden. Erstelles eines!</p>`;
+                list.innerHTML = `<p class="text-slate-500 text-xs italic col-span-full">Noch keine Bauprojekte vorhanden.</p>`;
                 return;
             }
             list.innerHTML = localProjects.map(p => `
-                <div class="bg-dark-card border border-dark-border rounded-2xl p-5 shadow-lg flex flex-col justify-between">
+                <div class="bg-dark-card border border-dark-border rounded-3xl p-6 shadow-xl flex flex-col justify-between">
                     <div>
-                        <div class="flex items-start justify-between mb-2">
+                        <div class="flex items-start justify-between mb-3">
                             <h3 class="font-bold text-white text-base">${p.title}</h3>
-                            ${p.coords ? `<span class="bg-dark-input text-brand-500 text-[10px] font-mono px-2 py-0.5 rounded border border-dark-border">${p.coords}</span>` : ''}
+                            ${p.coords ? `<span class="bg-dark-input text-brand-400 text-[10px] font-mono font-bold px-2.5 py-1 rounded-xl border border-dark-border">${p.coords}</span>` : ''}
                         </div>
-                        <p class="text-xs text-slate-400 mb-4">${p.desc || 'Keine Beschreibung'}</p>
+                        <p class="text-xs text-slate-300 mb-4 leading-relaxed">${p.desc || 'Keine Beschreibung'}</p>
                         
-                        <div class="space-y-1.5 mb-4">
-                            <span class="text-[10px] font-semibold uppercase text-slate-500 tracking-wider">Aufgaben:</span>
+                        ${p.matImage ? `
+                            <div class="mb-4">
+                                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1.5">Benötigte Materialien:</span>
+                                <div class="h-32 bg-dark-input rounded-2xl overflow-hidden border border-dark-border">
+                                    <img src="${p.matImage}" alt="Materialien" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/400x200/131c31/white?text=Bild-Fehler'">
+                                </div>
+                            </div>
+                        ` : ''}
+
+                        <div class="space-y-2 mb-4">
+                            <span class="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Aufgaben:</span>
                             ${p.tasks && p.tasks.length ? p.tasks.map((t, idx) => `
-                                <div onclick="toggleTask('${p.id}', ${idx})" class="flex items-center gap-2 cursor-pointer text-xs text-slate-300 hover:text-white">
-                                    <i data-lucide="${t.done ? 'check-square' : 'square'}" class="w-4 h-4 ${t.done ? 'text-brand-500' : 'text-slate-500'}"></i>
+                                <div onclick="toggleTask('${p.id}', ${idx})" class="flex items-center gap-2.5 cursor-pointer text-xs text-slate-200 hover:text-white bg-dark-input/40 p-2 rounded-xl border border-dark-border/50 transition">
+                                    <i data-lucide="${t.done ? 'check-square' : 'square'}" class="w-4 h-4 ${t.done ? 'text-brand-400' : 'text-slate-500'}"></i>
                                     <span class="${t.done ? 'line-through text-slate-500' : ''}">${t.text}</span>
                                 </div>
                             `).join('') : '<p class="text-xs text-slate-500 italic">Keine Unteraufgaben</p>'}
                         </div>
                     </div>
 
-                    <div class="pt-3 border-t border-dark-border flex items-center justify-between text-[11px] text-slate-500">
-                        <span class="flex items-center gap-1"><img src="https://mc-heads.net/avatar/${p.author}/16" class="w-4 h-4 rounded"> ${p.author}</span>
-                        ${isCloudMode ? `<button onclick="deleteDoc('projects', '${p.id}')" class="text-slate-500 hover:text-red-400"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>` : ''}
+                    <div class="pt-4 border-t border-dark-border flex items-center justify-between text-xs text-slate-400">
+                        <span class="flex items-center gap-2 font-medium"><img src="https://mc-heads.net/avatar/${p.author}/18" class="w-5 h-5 rounded-md"> ${p.author}</span>
+                        ${isCloudMode ? `<button onclick="deleteDoc('projects', '${p.id}')" class="text-slate-500 hover:text-red-400 p-1.5 rounded-lg hover:bg-red-500/10 transition"><i data-lucide="trash-2" class="w-4 h-4"></i></button>` : ''}
                     </div>
                 </div>
             `).join('');
             lucide.createIcons();
         }
 
-        // ITEMS
         async function saveItem(e) {
             e.preventDefault();
             const name = document.getElementById('item-name').value;
@@ -561,7 +711,7 @@
             } else {
                 localItems.push({ id: Date.now().toString(), ...itemData });
                 localStorage.setItem('gundihub_items', JSON.stringify(localItems));
-                renderItems();
+                renderAll();
             }
             closeModal('item-modal');
             e.target.reset();
@@ -573,34 +723,33 @@
                 await db.collection('items').doc(id).update({ status: newStatus });
             } else {
                 const item = localItems.find(i => i.id === id);
-                if (item) { item.status = newStatus; localStorage.setItem('gundihub_items', JSON.stringify(localItems)); renderItems(); }
+                if (item) { item.status = newStatus; localStorage.setItem('gundihub_items', JSON.stringify(localItems)); renderAll(); }
             }
         }
 
         function renderItems() {
             const list = document.getElementById('items-list');
             if (localItems.length === 0) {
-                list.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-500 text-xs italic">Keine Item-Bestellungen offen.</td></tr>`;
+                list.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-500 text-xs italic">Keine spezifischen Item-Bestellungen vorhanden.</td></tr>`;
                 return;
             }
             list.innerHTML = localItems.map(i => `
-                <tr class="hover:bg-dark-input/30 transition">
-                    <td class="p-4 font-semibold text-white">${i.name}</td>
-                    <td class="p-4 text-slate-300">${i.amount}</td>
-                    <td class="p-4 text-slate-400 flex items-center gap-1.5"><img src="https://mc-heads.net/avatar/${i.author}/16" class="w-4 h-4 rounded"> ${i.author}</td>
-                    <td class="p-4">
-                        <span class="px-2 py-1 rounded-full text-[10px] font-semibold ${i.status === 'Geliefert' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : i.status === 'In Arbeit' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-slate-500/10 text-slate-400 border border-slate-500/20'}">
+                <tr class="hover:bg-dark-input/50 transition">
+                    <td class="p-5 font-bold text-white">${i.name}</td>
+                    <td class="p-5 text-slate-300 font-mono text-xs">${i.amount}</td>
+                    <td class="p-5 text-slate-300 flex items-center gap-2"><img src="https://mc-heads.net/avatar/${i.author}/18" class="w-5 h-5 rounded-md"> ${i.author}</td>
+                    <td class="p-5">
+                        <span class="px-3 py-1 rounded-full text-xs font-bold ${i.status === 'Geliefert' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : i.status === 'In Arbeit' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-slate-500/10 text-slate-400 border border-slate-500/20'}">
                             ${i.status}
                         </span>
                     </td>
-                    <td class="p-4 text-right">
-                        <button onclick="toggleItemStatus('${i.id}', '${i.status}')" class="text-xs text-brand-500 hover:underline">Status ändern</button>
+                    <td class="p-5 text-right">
+                        <button onclick="toggleItemStatus('${i.id}', '${i.status}')" class="text-xs font-bold text-brand-400 hover:underline bg-brand-500/10 px-3 py-1.5 rounded-xl border border-brand-500/20 transition">Status ändern</button>
                     </td>
                 </tr>
             `).join('');
         }
 
-        // GALLERY
         async function saveGallery(e) {
             e.preventDefault();
             const title = document.getElementById('gallery-title').value;
@@ -612,7 +761,7 @@
             } else {
                 localGallery.push({ id: Date.now().toString(), ...galleryData });
                 localStorage.setItem('gundihub_gallery', JSON.stringify(localGallery));
-                renderGallery();
+                renderAll();
             }
             closeModal('gallery-modal');
             e.target.reset();
@@ -625,20 +774,20 @@
                 return;
             }
             list.innerHTML = localGallery.map(g => `
-                <div class="bg-dark-card border border-dark-border rounded-2xl overflow-hidden shadow-lg group">
-                    <div class="h-40 bg-dark-input overflow-hidden relative">
-                        <img src="${g.url}" alt="${g.title}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" onerror="this.src='https://placehold.co/400x300/1e293b/white?text=Bild+Fehler'">
+                <div class="bg-dark-card border border-dark-border rounded-3xl overflow-hidden shadow-xl group">
+                    <div class="h-44 bg-dark-input overflow-hidden relative">
+                        <img src="${g.url}" alt="${g.title}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" onerror="this.src='https://placehold.co/400x300/131c31/white?text=Bild+Fehler'">
                     </div>
-                    <div class="p-3">
+                    <div class="p-4">
                         <h4 class="font-bold text-white text-xs truncate">${g.title}</h4>
-                        <p class="text-[10px] text-slate-500 mt-1 flex items-center gap-1"><img src="https://mc-heads.net/avatar/${g.author}/14" class="w-3.5 h-3.5 rounded"> von ${g.author}</p>
+                        <p class="text-[10px] text-slate-400 mt-1.5 flex items-center gap-1.5"><img src="https://mc-heads.net/avatar/${g.author}/16" class="w-4 h-4 rounded-md"> von ${g.author}</p>
                     </div>
                 </div>
             `).join('');
         }
 
         async function deleteDoc(coll, id) {
-            if (confirm("Wirklich löschen?")) {
+            if (confirm("Möchtest du diesen Eintrag wirklich löschen?")) {
                 await db.collection(coll).doc(id).delete();
             }
         }
