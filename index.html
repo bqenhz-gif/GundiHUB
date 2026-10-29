@@ -12,1200 +12,636 @@
             theme: {
                 extend: {
                     colors: {
-                        minecraft: {
-                            dark: '#121214',
-                            card: '#1a1a1e',
-                            border: '#2d2d35',
-                            emerald: '#10b981',
-                            emeraldHover: '#059669',
-                            gold: '#f59e0b',
-                            stone: '#64748b'
+                        brand: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            900: '#14532d',
+                            950: '#052e16',
+                        },
+                        dark: {
+                            bg: '#0f172a',
+                            card: '#1e293b',
+                            border: '#334155',
+                            input: '#0f172a'
                         }
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        mono: ['Courier New', 'monospace']
                     }
                 }
             }
         }
     </script>
-    <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <style>
-        /* Custom Minecraft aesthetic scrollbars & background effects */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
+        .mc-btn {
+            box-shadow: inset -2px -4px 0px rgba(0,0,0,0.4), inset 2px 2px 0px rgba(255,255,255,0.2);
         }
-        ::-webkit-scrollbar-track {
-            background: #121214;
+        .mc-btn:active {
+            box-shadow: inset 2px 2px 0px rgba(0,0,0,0.4);
+            transform: translateY(2px);
         }
-        ::-webkit-scrollbar-thumb {
-            background: #2d2d35;
-            border-radius: 4px;
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
         }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #10b981;
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #0f172a;
         }
-        .mc-pattern {
-            background-image: radial-gradient(rgba(16, 185, 129, 0.05) 1px, transparent 1px);
-            background-size: 24px 24px;
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 3px;
         }
     </style>
 </head>
-<body class="bg-minecraft-dark text-slate-100 min-h-screen mc-pattern font-sans antialiased flex flex-col justify-between">
+<body class="bg-dark-bg text-slate-100 min-h-screen font-sans flex flex-col antialiased selection:bg-brand-500 selection:text-white">
 
-    <!-- Toast Notification Container -->
-    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
-
-    <!-- Custom Modal Container -->
-    <div id="custom-modal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-        <div id="modal-content" class="bg-minecraft-card border border-minecraft-border rounded-xl p-6 w-full max-w-md shadow-2xl">
-            <!-- Dynamic Modal Content -->
-        </div>
-    </div>
-
-    <!-- Auth Overlay (Login / Register Screen) -->
-    <div id="auth-screen" class="fixed inset-0 z-40 bg-minecraft-dark flex items-center justify-center p-4">
-        <div class="bg-minecraft-card border border-minecraft-border rounded-2xl p-8 w-full max-w-md shadow-2xl relative overflow-hidden">
-            <div class="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-emerald-500 via-teal-500 to-amber-500"></div>
-            <div class="text-center mb-8">
-                <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-emerald-500/10 text-emerald-400 mb-4 border border-emerald-500/20 text-2xl">
-                    <i class="fa-solid fa-cube"></i>
+    <!-- LOGIN MODAL -->
+    <div id="login-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+        <div class="bg-dark-card border border-dark-border w-full max-w-md rounded-2xl p-6 shadow-2xl relative overflow-hidden">
+            <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-brand-500 via-emerald-400 to-amber-500"></div>
+            
+            <div class="text-center mb-6">
+                <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-brand-500/10 text-brand-500 mb-3 border border-brand-500/20">
+                    <i data-lucide="box" class="w-6 h-6"></i>
                 </div>
-                <h1 class="text-2xl font-bold tracking-tight">Gundi Hub</h1>
-                <p class="text-sm text-slate-400 mt-1">Anmelden oder Account erstellen</p>
+                <h2 class="text-2xl font-bold text-white tracking-wide">Gundi Hub</h2>
+                <p class="text-slate-400 text-sm mt-1">Anmelden oder Account erstellen</p>
             </div>
 
-            <!-- Login / Register Form -->
-            <form id="login-form" class="space-y-4">
+            <form id="login-form" onsubmit="handleLogin(event)" class="space-y-4">
                 <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Minecraft In-Game Name (IGN)</label>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Minecraft In-Game Name (IGN)</label>
                     <div class="relative">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-500">
-                            <i class="fa-solid fa-user"></i>
-                        </span>
-                        <input type="text" id="ign-input" required placeholder="Dein Minecraft Name"
-                            class="w-full bg-minecraft-dark border border-minecraft-border rounded-xl px-4 py-3 pl-11 text-slate-100 placeholder-slate-600 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all text-sm">
+                        <i data-lucide="user" class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"></i>
+                        <input type="text" id="login-ign" required placeholder="z.B. Steve_123" class="w-full bg-dark-input border border-dark-border rounded-xl pl-10 pr-4 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-brand-500 transition">
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Persönlicher PIN (4–6 Zahlen)</label>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Persönlicher PIN (4–6 Zahlen)</label>
                     <div class="relative">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-500">
-                            <i class="fa-solid fa-lock"></i>
-                        </span>
-                        <input type="password" id="pin-input" required maxlength="6" placeholder="****"
-                            class="w-full bg-minecraft-dark border border-minecraft-border rounded-xl px-4 py-3 pl-11 text-slate-100 placeholder-slate-600 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all text-sm font-mono tracking-widest">
+                        <i data-lucide="lock" class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"></i>
+                        <input type="password" id="login-pin" required maxlength="6" pattern="[0-9]{4,6}" placeholder="••••" class="w-full bg-dark-input border border-dark-border rounded-xl pl-10 pr-4 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-brand-500 transition">
                     </div>
                 </div>
 
-                <button type="submit"
-                    class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-3 px-4 rounded-xl shadow-lg shadow-emerald-900/30 transition-all duration-200 flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-right-to-bracket"></i>
+                <button type="submit" class="w-full bg-brand-600 hover:bg-brand-500 text-white font-medium py-3 rounded-xl mc-btn transition flex items-center justify-center gap-2">
+                    <i data-lucide="log-in" class="w-5 h-5"></i>
                     <span>Einloggen / Registrieren</span>
                 </button>
-            </form>
 
-            <div class="mt-4 text-center">
-                <button onclick="openResetPinModal()" class="text-xs text-slate-400 hover:text-emerald-400 underline transition-all">
-                    PIN vergessen? Zurücksetzen
-                </button>
-            </div>
+                <div class="text-center mt-3">
+                    <button type="button" onclick="handleResetPin()" class="text-xs text-slate-400 hover:text-brand-500 underline transition">PIN vergessen? Zurücksetzen</button>
+                </div>
+            </form>
         </div>
     </div>
 
-    <!-- Main App Wrapper -->
-    <div id="app-screen" class="hidden flex-col min-h-screen">
-        <!-- Navigation Header -->
-        <header class="border-b border-minecraft-border bg-minecraft-card/80 backdrop-blur-md sticky top-0 z-30">
+    <!-- MAIN APP CONTENT -->
+    <div id="app" class="hidden flex-col min-h-screen">
+        <!-- NAVBAR -->
+        <header class="border-b border-dark-border bg-dark-card/50 backdrop-blur sticky top-0 z-40">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-                        <i class="fa-solid fa-cube text-lg"></i>
+                    <div class="p-2 bg-brand-500/10 border border-brand-500/20 rounded-lg text-brand-500">
+                        <i data-lucide="box" class="w-6 h-6"></i>
                     </div>
                     <div>
-                        <span class="font-bold tracking-tight text-lg">Gundi Hub</span>
-                        <div class="flex items-center gap-2">
-                            <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                            <span class="text-xs text-slate-400">Online & Synchronisiert</span>
-                        </div>
+                        <h1 class="text-lg font-bold text-white leading-tight">Gundi Hub</h1>
+                        <p class="text-xs text-slate-400 hidden sm:block">FWM Attack Project Board</p>
                     </div>
                 </div>
 
-                <!-- Desktop Navigation Tabs -->
-                <nav class="hidden md:flex items-center gap-1 bg-minecraft-dark/60 p-1.5 rounded-xl border border-minecraft-border">
-                    <button onclick="switchTab('dashboard')" id="nav-dashboard" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium transition-all text-emerald-400 bg-emerald-500/10">
-                        <i class="fa-solid fa-chart-pie mr-2"></i>Übersicht
+                <!-- Navigation Tabs -->
+                <nav class="flex items-center bg-dark-input p-1 rounded-xl border border-dark-border">
+                    <button onclick="switchTab('projects')" id="tab-btn-projects" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-brand-600 transition">
+                        <i data-lucide="pickaxe" class="w-4 h-4"></i>
+                        <span class="hidden sm:inline">Projekte</span>
                     </button>
-                    <button onclick="switchTab('projects')" id="nav-projects" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium transition-all text-slate-400 hover:text-slate-100 hover:bg-white/5">
-                        <i class="fa-solid fa-helmet-safety mr-2"></i>Bauprojekte
+                    <button onclick="switchTab('items')" id="tab-btn-items" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition">
+                        <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+                        <span class="hidden sm:inline">Bestellungen</span>
                     </button>
-                    <button onclick="switchTab('orders')" id="nav-orders" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium transition-all text-slate-400 hover:text-slate-100 hover:bg-white/5">
-                        <i class="fa-solid fa-box-open mr-2"></i>Bestellungen
-                    </button>
-                    <button onclick="switchTab('gallery')" id="nav-gallery" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium transition-all text-slate-400 hover:text-slate-100 hover:bg-white/5">
-                        <i class="fa-solid fa-images mr-2"></i>Inspiration
-                    </button>
-                    <button onclick="switchTab('members')" id="nav-members" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium transition-all text-slate-400 hover:text-slate-100 hover:bg-white/5">
-                        <i class="fa-solid fa-users mr-2"></i>Mitglieder
+                    <button onclick="switchTab('gallery')" id="tab-btn-gallery" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition">
+                        <i data-lucide="image" class="w-4 h-4"></i>
+                        <span class="hidden sm:inline">Inspiration</span>
                     </button>
                 </nav>
 
-                <!-- User Profile & Logout -->
+                <!-- User Profile -->
                 <div class="flex items-center gap-3">
-                    <div class="flex items-center gap-2 bg-minecraft-dark border border-minecraft-border px-3 py-1.5 rounded-xl">
-                        <img id="user-avatar" src="" alt="Avatar" class="w-7 h-7 rounded-lg bg-slate-800">
-                        <span id="current-username" class="text-sm font-medium text-slate-200">Spieler</span>
+                    <div class="flex items-center gap-2 bg-dark-card border border-dark-border px-3 py-1.5 rounded-xl">
+                        <img id="user-avatar" src="" alt="Avatar" class="w-6 h-6 rounded-md">
+                        <span id="user-display-name" class="text-xs font-semibold text-slate-200"></span>
                     </div>
-                    <button onclick="logout()" title="Abmelden" class="p-2.5 rounded-xl bg-minecraft-dark border border-minecraft-border text-slate-400 hover:text-red-400 hover:border-red-500/30 transition-all">
-                        <i class="fa-solid fa-power-off"></i>
+                    <button onclick="logout()" class="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-xl border border-transparent hover:border-red-500/20 transition">
+                        <i data-lucide="log-out" class="w-5 h-5"></i>
                     </button>
                 </div>
-            </div>
-
-            <!-- Mobile Sub-navigation Bar -->
-            <div class="md:hidden flex overflow-x-auto gap-2 px-4 py-2 border-t border-minecraft-border bg-minecraft-dark">
-                <button onclick="switchTab('dashboard')" id="mob-nav-dashboard" class="mob-tab-btn whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-medium text-emerald-400 bg-emerald-500/10">Übersicht</button>
-                <button onclick="switchTab('projects')" id="mob-nav-projects" class="mob-tab-btn whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400">Bauprojekte</button>
-                <button onclick="switchTab('orders')" id="mob-nav-orders" class="mob-tab-btn whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400">Bestellungen</button>
-                <button onclick="switchTab('gallery')" id="mob-nav-gallery" class="mob-tab-btn whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400">Inspiration</button>
-                <button onclick="switchTab('members')" id="mob-nav-members" class="mob-tab-btn whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400">Mitglieder</button>
             </div>
         </header>
 
-        <!-- Main Content Area -->
-        <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- SERVER INFO BANNER -->
+        <div class="bg-gradient-to-r from-emerald-950/40 via-dark-card to-dark-bg border-b border-dark-border py-2.5 px-4 text-center text-xs flex items-center justify-center gap-3 flex-wrap">
+            <span class="flex items-center gap-1.5 text-slate-300 font-medium">
+                <span class="w-2 h-2 rounded-full bg-brand-500 animate-pulse"></span> Server IP:
+                <code class="bg-dark-input px-2 py-0.5 rounded border border-dark-border text-brand-500 font-mono">friendswithmoney.net</code>
+            </span>
+            <button onclick="copyIp()" class="text-slate-400 hover:text-white underline flex items-center gap-1 transition">
+                <i data-lucide="copy" class="w-3.5 h-3.5"></i> IP Kopieren
+            </button>
+        </div>
 
-            <!-- TAB 1: DASHBOARD -->
-            <section id="tab-dashboard" class="space-y-8 tab-content">
-                <!-- Welcome Banner -->
-                <div class="relative bg-gradient-to-r from-emerald-900/40 via-teal-900/30 to-slate-900/60 border border-emerald-500/20 rounded-3xl p-8 overflow-hidden shadow-xl">
-                    <div class="absolute right-0 top-0 bottom-0 w-1/3 opacity-10 pointer-events-none flex items-center justify-end pr-8">
-                        <i class="fa-solid fa-mountain-city text-9xl text-emerald-400"></i>
-                    </div>
-                    <div class="relative z-10 max-w-2xl">
-                        <span class="inline-block px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-semibold tracking-wider uppercase mb-4">Gundi Minecraft Server</span>
-                        <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight mb-3">Willkommen zurück, <span id="welcome-ign" class="text-emerald-400">Builder</span>! 👋</h2>
-                        <p class="text-slate-300 text-sm sm:text-base leading-relaxed mb-6">
-                            Hier verwalten wir gemeinsam unsere Bauprojekte, planen Item-Bestellungen für Farmen und teilen Screenshots unserer Bauwerke.
-                        </p>
-                        
-                        <!-- Server IP Badge with Copy Button -->
-                        <div class="inline-flex items-center gap-3 bg-minecraft-dark/80 border border-emerald-500/40 p-2.5 px-4 rounded-2xl mb-6 shadow-inner">
-                            <i class="fa-solid fa-server text-emerald-400"></i>
-                            <div>
-                                <div class="text-[10px] uppercase font-semibold text-slate-400 tracking-wider">Server IP</div>
-                                <div class="font-mono text-sm font-bold text-emerald-300">friendswithmoney.net</div>
-                            </div>
-                            <button onclick="copyServerIp()" class="ml-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 active:scale-95">
-                                <i class="fa-solid fa-copy"></i> IP Kopieren
-                            </button>
-                        </div>
-
-                        <div class="flex flex-wrap gap-3">
-                            <button onclick="switchTab('projects')" class="bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-5 py-2.5 rounded-xl text-sm transition-all shadow-lg shadow-emerald-900/30 flex items-center gap-2">
-                                <i class="fa-solid fa-plus"></i> Bauprojekt starten
-                            </button>
-                            <button onclick="switchTab('orders')" class="bg-minecraft-dark hover:bg-white/5 border border-minecraft-border font-medium px-5 py-2.5 rounded-xl text-sm transition-all flex items-center gap-2">
-                                <i class="fa-solid fa-box-archive"></i> Item bestellen
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Stats Grid -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div class="bg-minecraft-card border border-minecraft-border rounded-2xl p-5 flex items-center gap-4 shadow-sm">
-                        <div class="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20 flex items-center justify-center text-xl">
-                            <i class="fa-solid fa-helmet-safety"></i>
-                        </div>
-                        <div>
-                            <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Aktive Projekte</p>
-                            <h3 id="stat-projects" class="text-2xl font-bold mt-1">0</h3>
-                        </div>
-                    </div>
-
-                    <div class="bg-minecraft-card border border-minecraft-border rounded-2xl p-5 flex items-center gap-4 shadow-sm">
-                        <div class="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center justify-center text-xl">
-                            <i class="fa-solid fa-box-open"></i>
-                        </div>
-                        <div>
-                            <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Offene Bestellungen</p>
-                            <h3 id="stat-orders" class="text-2xl font-bold mt-1">0</h3>
-                        </div>
-                    </div>
-
-                    <div class="bg-minecraft-card border border-minecraft-border rounded-2xl p-5 flex items-center gap-4 shadow-sm">
-                        <div class="w-12 h-12 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20 flex items-center justify-center text-xl">
-                            <i class="fa-solid fa-images"></i>
-                        </div>
-                        <div>
-                            <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Galerie Bilder</p>
-                            <h3 id="stat-gallery" class="text-2xl font-bold mt-1">0</h3>
-                        </div>
-                    </div>
-
-                    <div class="bg-minecraft-card border border-minecraft-border rounded-2xl p-5 flex items-center gap-4 shadow-sm">
-                        <div class="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center text-xl">
-                            <i class="fa-solid fa-users"></i>
-                        </div>
-                        <div>
-                            <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Registrierte Member</p>
-                            <h3 id="stat-members" class="text-2xl font-bold mt-1">0</h3>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Recent Activity & Quick Overview -->
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <!-- Recent Projects Preview -->
-                    <div class="lg:col-span-2 bg-minecraft-card border border-minecraft-border rounded-2xl p-6 shadow-sm flex flex-col">
-                        <div class="flex items-center justify-between mb-6">
-                            <h3 class="font-bold text-lg flex items-center gap-2">
-                                <i class="fa-solid fa-list-check text-emerald-400"></i> Aktuelle Bauprojekte
-                            </h3>
-                            <button onclick="switchTab('projects')" class="text-xs font-medium text-emerald-400 hover:underline">Alle anzeigen</button>
-                        </div>
-                        <div id="dashboard-projects-list" class="space-y-3 flex-1">
-                            <!-- Populated dynamically -->
-                            <p class="text-sm text-slate-500 py-4 text-center">Lade Projekte...</p>
-                        </div>
-                    </div>
-
-                    <!-- Server Info / Quick Rules -->
-                    <div class="bg-minecraft-card border border-minecraft-border rounded-2xl p-6 shadow-sm flex flex-col justify-between">
-                        <div>
-                            <h3 class="font-bold text-lg flex items-center gap-2 mb-4">
-                                <i class="fa-solid fa-circle-info text-amber-400"></i> Server Infos
-                            </h3>
-                            <ul class="space-y-3 text-sm text-slate-300">
-                                <li class="flex items-start gap-3">
-                                    <i class="fa-solid fa-check text-emerald-400 mt-1"></i>
-                                    <span>Trage benötigte Items in die Bestellliste ein.</span>
-                                </li>
-                                <li class="flex items-start gap-3">
-                                    <i class="fa-solid fa-check text-emerald-400 mt-1"></i>
-                                    <span>Erstelle neue Bauprojekte für gemeinsame Vorhaben.</span>
-                                </li>
-                                <li class="flex items-start gap-3">
-                                    <i class="fa-solid fa-check text-emerald-400 mt-1"></i>
-                                    <span>Lade Screenshots deiner Bauten in die Galerie hoch.</span>
-                                </li>
-                            </ul>
-                        </div>
-                        <div class="mt-6 pt-6 border-t border-minecraft-border/60">
-                            <div class="bg-minecraft-dark p-4 rounded-xl border border-minecraft-border">
-                                <p class="text-xs text-slate-400 font-medium uppercase">Server IP Adresse</p>
-                                <div class="flex items-center justify-between mt-1">
-                                    <p class="text-sm font-mono text-emerald-400 select-all">friendswithmoney.net</p>
-                                    <button onclick="copyServerIp()" class="text-xs text-slate-400 hover:text-emerald-400">
-                                        <i class="fa-solid fa-copy"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- TAB 2: PROJECTS & TO-DO BOARD -->
-            <section id="tab-projects" class="space-y-6 tab-content hidden">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <!-- MAIN CONTAINER -->
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
+            
+            <!-- PROJECTS TAB -->
+            <section id="tab-projects" class="space-y-6">
+                <div class="flex items-center justify-between">
                     <div>
-                        <h2 class="text-2xl font-bold tracking-tight">Bauprojekte & To-Do Board</h2>
-                        <p class="text-sm text-slate-400 mt-1">Plane unsere Bauwerke, Farmen und Städte gemeinsam.</p>
+                        <h2 class="text-xl font-bold text-white">Bauprojekte & Ziele</h2>
+                        <p class="text-xs text-slate-400">Verwalte Aufgaben und Fortschritte auf dem Server</p>
                     </div>
-                    <button onclick="openNewProjectModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-4 py-2.5 rounded-xl text-sm transition-all shadow-lg shadow-emerald-900/30 flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-plus"></i> Neues Projekt erstellen
+                    <button onclick="openModal('project-modal')" class="bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold px-4 py-2.5 rounded-xl mc-btn transition flex items-center gap-2">
+                        <i data-lucide="plus" class="w-4 h-4"></i> Neuer Bauauftrag
                     </button>
                 </div>
 
-                <!-- Filter / Search bar -->
-                <div class="flex items-center gap-3 bg-minecraft-card border border-minecraft-border p-3 rounded-xl">
-                    <i class="fa-solid fa-search text-slate-500 ml-2"></i>
-                    <input type="text" id="project-search" oninput="renderProjects()" placeholder="Projekt durchsuchen..." class="w-full bg-transparent text-sm text-slate-100 placeholder-slate-500 focus:outline-none">
-                </div>
-
-                <!-- Projects Grid -->
-                <div id="projects-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <!-- Populated dynamically -->
+                <div id="projects-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Projects dynamic render -->
                 </div>
             </section>
 
-            <!-- TAB 3: ITEM ORDERS & SHOPPING LIST -->
-            <section id="tab-orders" class="space-y-6 tab-content hidden">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <!-- ITEMS TAB -->
+            <section id="tab-items" class="hidden space-y-6">
+                <div class="flex items-center justify-between">
                     <div>
-                        <h2 class="text-2xl font-bold tracking-tight">Lager & Item-Bestellungen</h2>
-                        <p class="text-sm text-slate-400 mt-1">Was wird für unsere aktuellen Bauprojekte benötigt?</p>
+                        <h2 class="text-xl font-bold text-white">Item-Bestellungen & Ressourcen</h2>
+                        <p class="text-xs text-slate-400">Trage ein, was du an Material benötigst oder liefern kannst</p>
                     </div>
-                    <button onclick="openNewOrderModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-4 py-2.5 rounded-xl text-sm transition-all shadow-lg shadow-emerald-900/30 flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-plus"></i> Item anfordern
+                    <button onclick="openModal('item-modal')" class="bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold px-4 py-2.5 rounded-xl mc-btn transition flex items-center gap-2">
+                        <i data-lucide="plus" class="w-4 h-4"></i> Neue Bestellung
                     </button>
                 </div>
 
-                <!-- Orders Filter Tabs -->
-                <div class="flex gap-2 border-b border-minecraft-border pb-3">
-                    <button onclick="filterOrders('all')" id="filter-order-all" class="px-4 py-2 rounded-xl text-sm font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 transition-all">Alle</button>
-                    <button onclick="filterOrders('needed')" id="filter-order-needed" class="px-4 py-2 rounded-xl text-sm font-medium text-slate-400 hover:bg-white/5 transition-all">Gesucht</button>
-                    <button onclick="filterOrders('gathered')" id="filter-order-gathered" class="px-4 py-2 rounded-xl text-sm font-medium text-slate-400 hover:bg-white/5 transition-all">Gesammelt</button>
-                </div>
-
-                <!-- Orders Table / Grid -->
-                <div class="bg-minecraft-card border border-minecraft-border rounded-2xl overflow-hidden shadow-sm">
+                <div class="bg-dark-card border border-dark-border rounded-2xl overflow-hidden shadow-xl">
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse">
                             <thead>
-                                <tr class="border-b border-minecraft-border bg-minecraft-dark/50 text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                                    <th class="py-4 px-6">Item / Material</th>
-                                    <th class="py-4 px-6">Anzahl</th>
-                                    <th class="py-4 px-6">Kategorie</th>
-                                    <th class="py-4 px-6">Angefordert von</th>
-                                    <th class="py-4 px-6">Status</th>
-                                    <th class="py-4 px-6 text-right">Aktion</th>
+                                <tr class="bg-dark-input/50 text-slate-400 text-xs font-semibold uppercase border-b border-dark-border">
+                                    <th class="p-4">Item</th>
+                                    <th class="p-4">Menge</th>
+                                    <th class="p-4">Besteller</th>
+                                    <th class="p-4">Status</th>
+                                    <th class="p-4 text-right">Aktion</th>
                                 </tr>
                             </thead>
-                            <tbody id="orders-table-body" class="divide-y divide-minecraft-border text-sm">
-                                <!-- Populated dynamically -->
+                            <tbody id="items-list" class="divide-y divide-dark-border text-sm">
+                                <!-- Dynamic Render -->
                             </tbody>
                         </table>
                     </div>
                 </div>
             </section>
 
-            <!-- TAB 4: INSPIRATION & GALLERY -->
-            <section id="tab-gallery" class="space-y-6 tab-content hidden">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <!-- GALLERY TAB -->
+            <section id="tab-gallery" class="hidden space-y-6">
+                <div class="flex items-center justify-between">
                     <div>
-                        <h2 class="text-2xl font-bold tracking-tight">Inspiration & Galerie</h2>
-                        <p class="text-sm text-slate-400 mt-1">Teile Screenshots, Bauideen und Referenzen mit der Community.</p>
+                        <h2 class="text-xl font-bold text-white">Inspiration & Baupläne</h2>
+                        <p class="text-xs text-slate-400">Bilder von Vorlagen, Skizzen oder fertigen Bauten</p>
                     </div>
-                    <button onclick="openNewGalleryModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-4 py-2.5 rounded-xl text-sm transition-all shadow-lg shadow-emerald-900/30 flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-upload"></i> Bild hochladen / teilen
+                    <button onclick="openModal('gallery-modal')" class="bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold px-4 py-2.5 rounded-xl mc-btn transition flex items-center gap-2">
+                        <i data-lucide="plus" class="w-4 h-4"></i> Bild hinzufügen
                     </button>
                 </div>
 
-                <!-- Gallery Grid -->
-                <div id="gallery-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <!-- Populated dynamically -->
-                </div>
-            </section>
-
-            <!-- TAB 5: MEMBERS -->
-            <section id="tab-members" class="space-y-6 tab-content hidden">
-                <div>
-                    <h2 class="text-2xl font-bold tracking-tight">Server Community</h2>
-                    <p class="text-sm text-slate-400 mt-1">Alle registrierten Spieler auf diesem Server-Hub.</p>
-                </div>
-
-                <div id="members-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <!-- Populated dynamically -->
+                <div id="gallery-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    <!-- Dynamic Render -->
                 </div>
             </section>
 
         </main>
-
-        <!-- Footer -->
-        <footer class="border-t border-minecraft-border bg-minecraft-card/40 mt-12 py-6 text-center text-xs text-slate-500">
-            <p>Gundi Hub &bull; Server IP: <span class="font-mono text-emerald-500">friendswithmoney.net</span> &bull; Live-Kollaboration via Cloud Firestore</p>
-        </footer>
     </div>
 
-    <!-- Firebase & Application Script -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, getDoc, addDoc, updateDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    <!-- MODAL: PROJECT -->
+    <div id="project-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+        <div class="bg-dark-card border border-dark-border w-full max-w-lg rounded-2xl p-6 shadow-2xl relative">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-white">Neues Bauprojekt anlegen</h3>
+                <button onclick="closeModal('project-modal')" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form onsubmit="saveProject(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Titel des Projekts</label>
+                    <input type="text" id="project-title" required placeholder="z.B. Mittelalterliche Burg" class="w-full bg-dark-input border border-dark-border rounded-xl px-3 py-2 text-white focus:outline-none focus:border-brand-500">
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Koordinaten / Standort (optional)</label>
+                    <input type="text" id="project-coords" placeholder="X: 120, Y: 64, Z: -450" class="w-full bg-dark-input border border-dark-border rounded-xl px-3 py-2 text-white focus:outline-none focus:border-brand-500">
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Beschreibung</label>
+                    <textarea id="project-desc" rows="3" placeholder="Kurze Details zum Bauplan..." class="w-full bg-dark-input border border-dark-border rounded-xl px-3 py-2 text-white focus:outline-none focus:border-brand-500"></textarea>
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Aufgaben (Kommagetrennt)</label>
+                    <input type="text" id="project-tasks" placeholder="Fundament gießen, Dach decken, Dekoration" class="w-full bg-dark-input border border-dark-border rounded-xl px-3 py-2 text-white focus:outline-none focus:border-brand-500">
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeModal('project-modal')" class="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white">Abbrechen</button>
+                    <button type="submit" class="bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold px-4 py-2 rounded-xl mc-btn">Speichern</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-        // Global environment variables
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'gundi-hub-v1';
-        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : undefined;
+    <!-- MODAL: ITEM -->
+    <div id="item-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+        <div class="bg-dark-card border border-dark-border w-full max-w-md rounded-2xl p-6 shadow-2xl relative">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-white">Item-Bestellung aufgeben</h3>
+                <button onclick="closeModal('item-modal')" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form onsubmit="saveItem(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Item-Name</label>
+                    <input type="text" id="item-name" required placeholder="z.B. Eichenholz, Diamanten" class="w-full bg-dark-input border border-dark-border rounded-xl px-3 py-2 text-white focus:outline-none focus:border-brand-500">
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Benötigte Menge</label>
+                    <input type="text" id="item-amount" required placeholder="z.B. 5 Stacks, 64 Stück" class="w-full bg-dark-input border border-dark-border rounded-xl px-3 py-2 text-white focus:outline-none focus:border-brand-500">
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeModal('item-modal')" class="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white">Abbrechen</button>
+                    <button type="submit" class="bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold px-4 py-2 rounded-xl mc-btn">Bestellen</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-        let app, db, auth;
-        let currentUser = null;
-        let activeTab = 'dashboard';
-        let currentOrderFilter = 'all';
+    <!-- MODAL: GALLERY -->
+    <div id="gallery-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+        <div class="bg-dark-card border border-dark-border w-full max-w-md rounded-2xl p-6 shadow-2xl relative">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-white">Inspirationsbild teilen</h3>
+                <button onclick="closeModal('gallery-modal')" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form onsubmit="saveGallery(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Bild-Titel</label>
+                    <input type="text" id="gallery-title" required placeholder="z.B. Nether-Portal Idee" class="w-full bg-dark-input border border-dark-border rounded-xl px-3 py-2 text-white focus:outline-none focus:border-brand-500">
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Bild-URL (Link zum Bild)</label>
+                    <input type="url" id="gallery-url" required placeholder="https://..." class="w-full bg-dark-input border border-dark-border rounded-xl px-3 py-2 text-white focus:outline-none focus:border-brand-500">
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeModal('gallery-modal')" class="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white">Abbrechen</button>
+                    <button type="submit" class="bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold px-4 py-2 rounded-xl mc-btn">Hinzufügen</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-        // Helper function to copy Server IP
-        window.copyServerIp = function() {
-            const tempInput = document.createElement("input");
-            tempInput.value = "friendswithmoney.net";
-            document.body.appendChild(tempInput);
-            tempInput.select();
-            document.execCommand("copy");
-            document.body.removeChild(tempInput);
-            showToast("Server IP 'friendswithmoney.net' kopiert!", "success");
+    <!-- APPLICATION LOGIC -->
+    <script>
+        // FIREBASE CONFIGURATION aus deinem Screenshot
+        const firebaseConfig = {
+            apiKey: "AIzaSyR8GM4yh1w7igk04HLbSM4MJXazl1G3SEY",
+            authDomain: "gundihub.firebaseapp.com",
+            projectId: "gundihub",
+            storageBucket: "gundihub.firebasestorage.app",
+            messagingSenderId: "929442684559",
+            appId: "1:929442684559:web:09ee333e627b2ad1f11afa",
+            measurementId: "G-D16WTN73GJ"
         };
 
-        // Data arrays
-        let usersData = [];
-        let projectsData = [];
-        let ordersData = [];
-        let galleryData = [];
+        // Initialize Firebase
+        let db = null;
+        let isCloudMode = false;
 
-        // Initialize Firebase & Auth
-        async function initFirebase() {
-            try {
-                if (Object.keys(firebaseConfig).length > 0) {
-                    app = initializeApp(firebaseConfig);
-                    db = getFirestore(app);
-                    auth = getAuth(app);
-
-                    if (initialAuthToken) {
-                        await signInWithCustomToken(auth, initialAuthToken);
-                    } else {
-                        await signInAnonymously(auth);
-                    }
-
-                    // Auto login if session exists
-                    const savedUser = localStorage.getItem('mc_hub_user');
-                    if (savedUser) {
-                        currentUser = JSON.parse(savedUser);
-                        enterApp();
-                    }
-                } else {
-                    showToast("Cloud-Verbindung nicht konfiguriert.", "error");
-                }
-            } catch (err) {
-                console.error("Firebase init error:", err);
-            }
+        try {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.firestore();
+            isCloudMode = true;
+        } catch(e) {
+            console.warn("Firebase Initialization Error, falling back to local mode:", e);
         }
 
-        // Setup real-time listeners
-        function setupListeners() {
-            if (!db) return;
+        // APP STATE
+        let currentUser = null;
+        let localProjects = [];
+        let localItems = [];
+        let localGallery = [];
 
-            // Users listener
-            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'users'), (snapshot) => {
-                usersData = [];
-                snapshot.forEach(docSnap => usersData.push(docSnap.data()));
-                renderMembers();
-                updateStats();
-            }, (error) => console.error("Users listener error:", error));
-
-            // Projects listener
-            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'projects'), (snapshot) => {
-                projectsData = [];
-                snapshot.forEach(docSnap => {
-                    projectsData.push({ id: docSnap.id, ...docSnap.data() });
-                });
-                renderProjects();
-                renderDashboardProjects();
-                updateStats();
-            }, (error) => console.error("Projects listener error:", error));
-
-            // Orders listener
-            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'orders'), (snapshot) => {
-                ordersData = [];
-                snapshot.forEach(docSnap => {
-                    ordersData.push({ id: docSnap.id, ...docSnap.data() });
-                });
-                renderOrders();
-                updateStats();
-            }, (error) => console.error("Orders listener error:", error));
-
-            // Gallery listener
-            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'gallery'), (snapshot) => {
-                galleryData = [];
-                snapshot.forEach(docSnap => {
-                    galleryData.push({ id: docSnap.id, ...docSnap.data() });
-                });
-                renderGallery();
-                updateStats();
-            }, (error) => console.error("Gallery listener error:", error));
-        }
-
-        // Login / Registration Handler
-        document.getElementById('login-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const ign = document.getElementById('ign-input').value.trim();
-            const pin = document.getElementById('pin-input').value.trim();
-
-            if (!ign || !pin) {
-                showToast("Bitte gib deinen Namen und einen PIN ein.", "error");
-                return;
-            }
-
-            if (pin.length < 4) {
-                showToast("Der PIN muss mindestens 4 Zahlen lang sein.", "error");
-                return;
-            }
-
-            try {
-                const userDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', ign.toLowerCase());
-                const userDoc = await getDoc(userDocRef);
-
-                if (userDoc.exists()) {
-                    // Check PIN
-                    const userData = userDoc.data();
-                    if (userData.pin === pin) {
-                        // Success Login
-                        currentUser = {
-                            ign: userData.ign,
-                            avatar: `https://mc-heads.net/avatar/${encodeURIComponent(userData.ign)}/64`
-                        };
-                        localStorage.setItem('mc_hub_user', JSON.stringify(currentUser));
-                        enterApp();
-                        showToast(`Willkommen zurück, ${userData.ign}!`, "success");
-                    } else {
-                        showToast("Falscher PIN! Klicke auf 'PIN vergessen', falls du ihn zurücksetzen möchtest.", "error");
-                    }
-                } else {
-                    // Register new user with this PIN
-                    await setDoc(userDocRef, {
-                        ign: ign,
-                        pin: pin,
-                        createdAt: new Date().toISOString(),
-                        lastSeen: new Date().toISOString()
-                    });
-
-                    currentUser = {
-                        ign: ign,
-                        avatar: `https://mc-heads.net/avatar/${encodeURIComponent(ign)}/64`
-                    };
-                    localStorage.setItem('mc_hub_user', JSON.stringify(currentUser));
-                    enterApp();
-                    showToast(`Account für ${ign} mit PIN erstellt!`, "success");
-                }
-            } catch (err) {
-                console.error("Auth error:", err);
-                showToast("Fehler bei der Anmeldung.", "error");
+        // INIT
+        window.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            const savedUser = localStorage.getItem('gundihub_user');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                showApp();
             }
         });
 
-        // Reset PIN Modal
-        window.openResetPinModal = function() {
-            showModal(`
-                <h3 class="font-bold text-lg mb-4 flex items-center gap-2"><i class="fa-solid fa-key text-emerald-400"></i> PIN zurücksetzen</h3>
-                <form id="reset-pin-form" class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Dein Minecraft Name</label>
-                        <input type="text" id="reset-ign" required placeholder="z.B. Steve" class="w-full bg-minecraft-dark border border-minecraft-border rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Neuer PIN (4-6 Zahlen)</label>
-                        <input type="password" id="reset-new-pin" required maxlength="6" placeholder="****" class="w-full bg-minecraft-dark border border-minecraft-border rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-emerald-500 font-mono tracking-widest">
-                    </div>
-                    <div class="flex justify-end gap-3 mt-6">
-                        <button type="button" onclick="closeModal()" class="px-4 py-2 rounded-xl text-sm bg-minecraft-dark border border-minecraft-border text-slate-300">Abbrechen</button>
-                        <button type="submit" class="px-4 py-2 rounded-xl text-sm bg-emerald-600 hover:bg-emerald-500 text-white font-medium">PIN Ändern</button>
-                    </div>
-                </form>
-            `);
+        // AUTH HANDLERS
+        async function handleLogin(e) {
+            e.preventDefault();
+            const ign = document.getElementById('login-ign').value.trim();
+            const pin = document.getElementById('login-pin').value.trim();
 
-            document.getElementById('reset-pin-form').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const ign = document.getElementById('reset-ign').value.trim();
-                const newPin = document.getElementById('reset-new-pin').value.trim();
+            if (!ign || !pin) return;
 
-                if (newPin.length < 4) {
-                    showToast("Der PIN muss mindestens 4 Zeichen lang sein.", "error");
-                    return;
-                }
-
+            if (isCloudMode) {
                 try {
-                    const userDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', ign.toLowerCase());
-                    const userDoc = await getDoc(userDocRef);
+                    const userRef = db.collection('users').doc(ign.toLowerCase());
+                    const doc = await userRef.get();
 
-                    if (!userDoc.exists()) {
-                        showToast("Kein Account mit diesem Minecraft Namen gefunden.", "error");
-                        return;
+                    if (doc.exists) {
+                        const data = doc.data();
+                        if (data.pin === pin) {
+                            currentUser = { ign: data.ign };
+                            completeLogin();
+                        } else {
+                            alert("Falscher PIN für diesen Minecraft-Namen!");
+                        }
+                    } else {
+                        // Register new user
+                        await userRef.set({ ign, pin, createdAt: new Date() });
+                        currentUser = { ign };
+                        completeLogin();
                     }
-
-                    await updateDoc(userDocRef, {
-                        pin: newPin,
-                        lastPinReset: new Date().toISOString()
-                    });
-
-                    closeModal();
-                    showToast("PIN wurde erfolgreich geändert! Du kannst dich jetzt einloggen.", "success");
-                } catch (err) {
-                    console.error("Reset PIN error:", err);
-                    showToast("Fehler beim Zurücksetzen des PINs.", "error");
+                } catch(err) {
+                    console.error("Cloud login error:", err);
+                    alert("Verbindungsfehler zur Datenbank. Es wird lokal eingeloggt.");
+                    currentUser = { ign };
+                    completeLogin();
                 }
-            });
+            } else {
+                currentUser = { ign };
+                completeLogin();
+            }
         }
 
-        function enterApp() {
-            document.getElementById('auth-screen').classList.add('hidden');
-            document.getElementById('app-screen').classList.remove('hidden');
-            document.getElementById('app-screen').classList.add('flex');
-            document.getElementById('welcome-ign').innerText = currentUser.ign;
-            document.getElementById('current-username').innerText = currentUser.ign;
-            document.getElementById('user-avatar').src = currentUser.avatar;
-
-            setupListeners();
+        function completeLogin() {
+            localStorage.setItem('gundihub_user', JSON.stringify(currentUser));
+            document.getElementById('login-modal').classList.add('hidden');
+            showApp();
         }
 
-        window.logout = function() {
-            localStorage.removeItem('mc_hub_user');
+        async function handleResetPin() {
+            const ign = prompt("Gib deinen Minecraft In-Game Namen ein:");
+            if (!ign) return;
+            const newPin = prompt("Gib deinen neuen 4-6 stelligen PIN ein:");
+            if (!newPin || newPin.length < 4 || newPin.length > 6) {
+                alert("Ungültiger PIN. Bitte 4 bis 6 Zahlen eingeben.");
+                return;
+            }
+
+            if (isCloudMode) {
+                try {
+                    const userRef = db.collection('users').doc(ign.toLowerCase());
+                    await userRef.set({ ign, pin: newPin }, { merge: true });
+                    alert("Dein PIN wurde erfolgreich zurückgesetzt! Du kannst dich jetzt damit einloggen.");
+                } catch(e) {
+                    alert("Fehler beim Zurücksetzen des PINs.");
+                }
+            } else {
+                alert("PIN zurückgesetzt! Melde dich einfach neu an.");
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('gundihub_user');
             currentUser = null;
-            document.getElementById('app-screen').classList.remove('flex');
-            document.getElementById('app-screen').classList.add('hidden');
-            document.getElementById('auth-screen').classList.remove('hidden');
-            showToast("Erfolgreich abgemeldet.", "info");
+            location.reload();
         }
 
-        // Tab Navigation
-        window.switchTab = function(tabName) {
-            activeTab = tabName;
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+        function showApp() {
+            document.getElementById('login-modal').classList.add('hidden');
+            document.getElementById('app').classList.remove('hidden');
+            document.getElementById('app').classList.add('flex');
 
-            // Desktop buttons
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('text-emerald-400', 'bg-emerald-500/10');
-                btn.classList.add('text-slate-400', 'hover:text-slate-100', 'hover:bg-white/5');
+            document.getElementById('user-display-name').textContent = currentUser.ign;
+            document.getElementById('user-avatar').src = `https://mc-heads.net/avatar/${currentUser.ign}/24`;
+
+            loadData();
+        }
+
+        // NAVIGATION
+        function switchTab(tab) {
+            ['projects', 'items', 'gallery'].forEach(t => {
+                document.getElementById(`tab-${t}`).classList.add('hidden');
+                const btn = document.getElementById(`tab-btn-${t}`);
+                btn.className = "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition";
             });
-            const activeBtn = document.getElementById(`nav-${tabName}`);
-            if (activeBtn) {
-                activeBtn.classList.remove('text-slate-400', 'hover:text-slate-100', 'hover:bg-white/5');
-                activeBtn.classList.add('text-emerald-400', 'bg-emerald-500/10');
+
+            document.getElementById(`tab-${tab}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`tab-btn-${tab}`);
+            activeBtn.className = "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-brand-600 transition";
+        }
+
+        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+        function copyIp() {
+            navigator.clipboard.writeText("friendswithmoney.net");
+            alert("Server-IP (friendswithmoney.net) in die Zwischenablage kopiert!");
+        }
+
+        // DATA LOADING & RENDERING
+        function loadData() {
+            if (isCloudMode) {
+                db.collection('projects').onSnapshot(snapshot => {
+                    localProjects = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    renderProjects();
+                });
+                db.collection('items').onSnapshot(snapshot => {
+                    localItems = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    renderItems();
+                });
+                db.collection('gallery').onSnapshot(snapshot => {
+                    localGallery = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    renderGallery();
+                });
+            } else {
+                localProjects = JSON.parse(localStorage.getItem('gundihub_projects') || '[]');
+                localItems = JSON.parse(localStorage.getItem('gundihub_items') || '[]');
+                localGallery = JSON.parse(localStorage.getItem('gundihub_gallery') || '[]');
+                renderProjects(); renderItems(); renderGallery();
+            }
+        }
+
+        // PROJECTS
+        async function saveProject(e) {
+            e.preventDefault();
+            const title = document.getElementById('project-title').value;
+            const coords = document.getElementById('project-coords').value;
+            const desc = document.getElementById('project-desc').value;
+            const tasksRaw = document.getElementById('project-tasks').value;
+
+            const tasks = tasksRaw ? tasksRaw.split(',').map(t => ({ text: t.trim(), done: false })) : [];
+
+            const projectData = { title, coords, desc, tasks, author: currentUser.ign, createdAt: new Date() };
+
+            if (isCloudMode) {
+                await db.collection('projects').add(projectData);
+            } else {
+                localProjects.push({ id: Date.now().toString(), ...projectData });
+                localStorage.setItem('gundihub_projects', JSON.stringify(localProjects));
+                renderProjects();
             }
 
-            // Mobile buttons
-            document.querySelectorAll('.mob-tab-btn').forEach(btn => {
-                btn.classList.remove('text-emerald-400', 'bg-emerald-500/10');
-                btn.classList.add('text-slate-400');
-            });
-            const activeMobBtn = document.getElementById(`mob-nav-${tabName}`);
-            if (activeMobBtn) {
-                activeMobBtn.classList.remove('text-slate-400');
-                activeMobBtn.classList.add('text-emerald-400', 'bg-emerald-500/10');
+            closeModal('project-modal');
+            e.target.reset();
+        }
+
+        async function toggleTask(projectId, taskIndex) {
+            const proj = localProjects.find(p => p.id === projectId);
+            if (!proj) return;
+            proj.tasks[taskIndex].done = !proj.tasks[taskIndex].done;
+
+            if (isCloudMode) {
+                await db.collection('projects').doc(projectId).update({ tasks: proj.tasks });
+            } else {
+                localStorage.setItem('gundihub_projects', JSON.stringify(localProjects));
+                renderProjects();
             }
         }
 
-        // Update Dashboard Stats
-        function updateStats() {
-            document.getElementById('stat-projects').innerText = projectsData.length;
-            const openOrders = ordersData.filter(o => o.status === 'needed').length;
-            document.getElementById('stat-orders').innerText = openOrders;
-            document.getElementById('stat-gallery').innerText = galleryData.length;
-            document.getElementById('stat-members').innerText = usersData.length;
-        }
-
-        // Render Dashboard Projects
-        function renderDashboardProjects() {
-            const container = document.getElementById('dashboard-projects-list');
-            if (projectsData.length === 0) {
-                container.innerHTML = `<p class="text-sm text-slate-500 py-4 text-center">Noch keine Bauprojekte vorhanden.</p>`;
+        function renderProjects() {
+            const list = document.getElementById('projects-list');
+            if (localProjects.length === 0) {
+                list.innerHTML = `<p class="text-slate-500 text-xs italic col-span-full">Noch keine Bauprojekte vorhanden. Erstelles eines!</p>`;
                 return;
             }
-
-            container.innerHTML = projectsData.slice(0, 3).map(p => {
-                const totalTasks = p.tasks ? p.tasks.length : 0;
-                const completedTasks = p.tasks ? p.tasks.filter(t => t.done).length : 0;
-                const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
-
-                const statusBadge = p.status === 'finished' ? '<span class="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 text-xs">Fertig</span>' :
-                                    p.status === 'in_progress' ? '<span class="px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 text-xs">In Arbeit</span>' :
-                                    '<span class="px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 text-xs">Geplant</span>';
-
-                return `
-                    <div class="bg-minecraft-dark border border-minecraft-border rounded-xl p-4 flex items-center justify-between gap-4">
-                        <div>
-                            <div class="flex items-center gap-2 mb-1">
-                                <h4 class="font-semibold text-sm">${escapeHtml(p.title)}</h4>
-                                ${statusBadge}
-                            </div>
-                            <p class="text-xs text-slate-400 line-clamp-1">${escapeHtml(p.description)}</p>
+            list.innerHTML = localProjects.map(p => `
+                <div class="bg-dark-card border border-dark-border rounded-2xl p-5 shadow-lg flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-start justify-between mb-2">
+                            <h3 class="font-bold text-white text-base">${p.title}</h3>
+                            ${p.coords ? `<span class="bg-dark-input text-brand-500 text-[10px] font-mono px-2 py-0.5 rounded border border-dark-border">${p.coords}</span>` : ''}
                         </div>
-                        <div class="text-right shrink-0">
-                            <span class="text-xs font-mono text-emerald-400">${progress}%</span>
-                            <div class="w-16 h-1.5 bg-slate-800 rounded-full mt-1 overflow-hidden">
-                                <div class="bg-emerald-500 h-full" style="width: ${progress}%"></div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        // --- PROJECTS LOGIC ---
-        window.renderProjects = function() {
-            const searchTerm = (document.getElementById('project-search')?.value || '').toLowerCase();
-            const grid = document.getElementById('projects-grid');
-            if (!grid) return;
-
-            const filtered = projectsData.filter(p => p.title.toLowerCase().includes(searchTerm) || p.description.toLowerCase().includes(searchTerm));
-
-            if (filtered.length === 0) {
-                grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-500 text-sm">Keine Projekte gefunden.</div>`;
-                return;
-            }
-
-            grid.innerHTML = filtered.map(p => {
-                const totalTasks = p.tasks ? p.tasks.length : 0;
-                const completedTasks = p.tasks ? p.tasks.filter(t => t.done).length : 0;
-                const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
-
-                const statusBadge = p.status === 'finished' ? '<span class="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-medium">Fertig</span>' :
-                                    p.status === 'in_progress' ? '<span class="px-2.5 py-1 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 text-xs font-medium">In Arbeit</span>' :
-                                    '<span class="px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 text-xs font-medium">Geplant</span>';
-
-                const imageHtml = p.imageUrl ? `<img src="${escapeHtml(p.imageUrl)}" alt="Projekt Bild" class="w-full h-40 object-cover rounded-t-xl" onerror="this.src='https://placehold.co/600x400/121214/10b981?text=Kein+Bild'">` : '';
-
-                const tasksHtml = p.tasks && p.tasks.length > 0 ? p.tasks.map((t, idx) => `
-                    <label class="flex items-center gap-2 text-sm text-slate-300 cursor-pointer py-1">
-                        <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleTask('${p.id}', ${idx})" class="rounded bg-minecraft-dark border-minecraft-border text-emerald-500 focus:ring-0">
-                        <span class="${t.done ? 'line-through text-slate-500' : ''}">${escapeHtml(t.text)}</span>
-                    </label>
-                `).join('') : '<p class="text-xs text-slate-500 italic">Keine Aufgaben eingetragen.</p>';
-
-                return `
-                    <div class="bg-minecraft-card border border-minecraft-border rounded-2xl overflow-hidden shadow-sm flex flex-col justify-between">
-                        <div>
-                            ${imageHtml}
-                            <div class="p-5">
-                                <div class="flex items-center justify-between gap-2 mb-2">
-                                    <span class="text-xs font-medium uppercase text-emerald-400">${escapeHtml(p.category || 'Basis')}</span>
-                                    ${statusBadge}
+                        <p class="text-xs text-slate-400 mb-4">${p.desc || 'Keine Beschreibung'}</p>
+                        
+                        <div class="space-y-1.5 mb-4">
+                            <span class="text-[10px] font-semibold uppercase text-slate-500 tracking-wider">Aufgaben:</span>
+                            ${p.tasks && p.tasks.length ? p.tasks.map((t, idx) => `
+                                <div onclick="toggleTask('${p.id}', ${idx})" class="flex items-center gap-2 cursor-pointer text-xs text-slate-300 hover:text-white">
+                                    <i data-lucide="${t.done ? 'check-square' : 'square'}" class="w-4 h-4 ${t.done ? 'text-brand-500' : 'text-slate-500'}"></i>
+                                    <span class="${t.done ? 'line-through text-slate-500' : ''}">${t.text}</span>
                                 </div>
-                                <h3 class="font-bold text-lg mb-2">${escapeHtml(p.title)}</h3>
-                                <p class="text-sm text-slate-400 mb-4 leading-relaxed">${escapeHtml(p.description)}</p>
-
-                                <div class="space-y-2 mb-4">
-                                    <div class="flex justify-between text-xs text-slate-400 font-medium">
-                                        <span>Fortschritt</span>
-                                        <span>${progress}% (${completedTasks}/${totalTasks})</span>
-                                    </div>
-                                    <div class="w-full h-2 bg-minecraft-dark rounded-full overflow-hidden border border-minecraft-border">
-                                        <div class="bg-emerald-500 h-full transition-all duration-300" style="width: ${progress}%"></div>
-                                    </div>
-                                </div>
-
-                                <div class="border-t border-minecraft-border pt-4 mb-4">
-                                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">To-Do Checkliste:</p>
-                                    <div class="space-y-1 max-h-36 overflow-y-auto pr-1">
-                                        ${tasksHtml}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="p-5 pt-0 flex items-center justify-between border-t border-minecraft-border/60 bg-minecraft-dark/30 mt-4">
-                            <span class="text-xs text-slate-500">Von: <strong class="text-slate-300">${escapeHtml(p.author || 'Unbekannt')}</strong></span>
-                            <div class="flex items-center gap-2">
-                                <button onclick="openAddTaskModal('${p.id}')" title="Aufgabe hinzufügen" class="p-2 rounded-lg bg-minecraft-dark border border-minecraft-border text-slate-300 hover:text-emerald-400 text-xs">
-                                    <i class="fa-solid fa-plus"></i>
-                                </button>
-                                <button onclick="deleteProject('${p.id}')" title="Projekt löschen" class="p-2 rounded-lg bg-minecraft-dark border border-minecraft-border text-slate-400 hover:text-red-400 text-xs">
-                                    <i class="fa-solid fa-trash"></i>
-                                </button>
-                            </div>
+                            `).join('') : '<p class="text-xs text-slate-500 italic">Keine Unteraufgaben</p>'}
                         </div>
                     </div>
-                `;
-            }).join('');
-        }
 
-        window.openNewProjectModal = function() {
-            showModal(`
-                <h3 class="font-bold text-lg mb-4 flex items-center gap-2"><i class="fa-solid fa-helmet-safety text-emerald-400"></i> Neues Bauprojekt</h3>
-                <form id="new-project-form" class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Projekttitel</label>
-                        <input type="text" id="proj-title" required placeholder="z.B. Eisenfarm XXL" class="w-full bg-minecraft-dark border border-minecraft-border rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Kategorie</label>
-                        <select id="proj-category" class="w-full bg-minecraft-dark border border-minecraft-border rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
-                            <option value="Basis & Haus">Basis & Haus</option>
-                            <option value="Farm & Produktion">Farm & Produktion</option>
-                            <option value="Redstone & Technik">Redstone & Technik</option>
-                            <option value="Dekoration & Landschaft">Dekoration & Landschaft</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Status</label>
-                        <select id="proj-status" class="w-full bg-minecraft-dark border border-minecraft-border rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
-                            <option value="planned">Geplant</option>
-                            <option value="in_progress">In Arbeit</option>
-                            <option value="finished">Fertig</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Beschreibung</label>
-                        <textarea id="proj-desc" rows="3" placeholder="Kurze Beschreibung des Projekts..." class="w-full bg-minecraft-dark border border-minecraft-border rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-emerald-500"></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Bild-Referenz URL (optional)</label>
-                        <input type="url" id="proj-image" placeholder="https://imgur.com/..." class="w-full bg-minecraft-dark border border-minecraft-border rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
-                    </div>
-                    <div class="flex justify-end gap-3 mt-6">
-                        <button type="button" onclick="closeModal()" class="px-4 py-2 rounded-xl text-sm bg-minecraft-dark border border-minecraft-border text-slate-300 hover:bg-white/5">Abbrechen</button>
-                        <button type="submit" class="px-4 py-2 rounded-xl text-sm bg-emerald-600 hover:bg-emerald-500 text-white font-medium">Erstellen</button>
-                    </div>
-                </form>
-            `);
-
-            document.getElementById('new-project-form').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const title = document.getElementById('proj-title').value;
-                const category = document.getElementById('proj-category').value;
-                const status = document.getElementById('proj-status').value;
-                const description = document.getElementById('proj-desc').value;
-                const imageUrl = document.getElementById('proj-image').value;
-
-                try {
-                    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'projects'), {
-                        title, category, status, description, imageUrl,
-                        author: currentUser.ign,
-                        tasks: [{ text: "Materialien sammeln", done: false }, { text: "Fundament bauen", done: false }],
-                        createdAt: new Date().toISOString()
-                    });
-                    closeModal();
-                    showToast("Bauprojekt erfolgreich erstellt!", "success");
-                } catch (err) {
-                    console.error("Error adding project:", err);
-                    showToast("Fehler beim Erstellen des Projekts.", "error");
-                }
-            });
-        }
-
-        window.openAddTaskModal = function(projectId) {
-            showModal(`
-                <h3 class="font-bold text-lg mb-4 flex items-center gap-2"><i class="fa-solid fa-plus text-emerald-400"></i> Aufgabe hinzufügen</h3>
-                <form id="add-task-form" class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Aufgabenbeschreibung</label>
-                        <input type="text" id="task-text" required placeholder="z.B. 2 Doppelchests Eichenholz farmen" class="w-full bg-minecraft-dark border border-minecraft-border rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
-                    </div>
-                    <div class="flex justify-end gap-3 mt-6">
-                        <button type="button" onclick="closeModal()" class="px-4 py-2 rounded-xl text-sm bg-minecraft-dark border border-minecraft-border text-slate-300">Abbrechen</button>
-                        <button type="submit" class="px-4 py-2 rounded-xl text-sm bg-emerald-600 hover:bg-emerald-500 text-white font-medium">Hinzufügen</button>
-                    </div>
-                </form>
-            `);
-
-            document.getElementById('add-task-form').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const text = document.getElementById('task-text').value;
-                const project = projectsData.find(p => p.id === projectId);
-                if (!project) return;
-
-                const tasks = project.tasks || [];
-                tasks.push({ text, done: false });
-
-                try {
-                    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'projects', projectId), { tasks });
-                    closeModal();
-                    showToast("Aufgabe hinzugefügt!", "success");
-                } catch (err) {
-                    console.error("Error adding task:", err);
-                    showToast("Fehler beim Hinzufügen der Aufgabe.", "error");
-                }
-            });
-        }
-
-        window.toggleTask = async function(projectId, taskIdx) {
-            const project = projectsData.find(p => p.id === projectId);
-            if (!project || !project.tasks) return;
-
-            project.tasks[taskIdx].done = !project.tasks[taskIdx].done;
-
-            try {
-                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'projects', projectId), { tasks: project.tasks });
-            } catch (err) {
-                console.error("Error toggling task:", err);
-            }
-        }
-
-        window.deleteProject = async function(projectId) {
-            if (confirmCustom("Möchtest du dieses Projekt wirklich löschen?")) {
-                try {
-                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'projects', projectId));
-                    showToast("Projekt gelöscht.", "info");
-                } catch (err) {
-                    console.error("Error deleting project:", err);
-                }
-            }
-        }
-
-        // --- ORDERS LOGIC ---
-        window.filterOrders = function(status) {
-            currentOrderFilter = status;
-            ['all', 'needed', 'gathered'].forEach(s => {
-                const btn = document.getElementById(`filter-order-${s}`);
-                if (!btn) return;
-                if (s === status) {
-                    btn.className = "px-4 py-2 rounded-xl text-sm font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 transition-all";
-                } else {
-                    btn.className = "px-4 py-2 rounded-xl text-sm font-medium text-slate-400 hover:bg-white/5 transition-all";
-                }
-            });
-            renderOrders();
-        }
-
-        window.renderOrders = function() {
-            const tbody = document.getElementById('orders-table-body');
-            if (!tbody) return;
-
-            const filtered = ordersData.filter(o => {
-                if (currentOrderFilter === 'all') return true;
-                return o.status === currentOrderFilter;
-            });
-
-            if (filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-500 text-sm">Keine Bestellungen in dieser Ansicht.</td></tr>`;
-                return;
-            }
-
-            tbody.innerHTML = filtered.map(o => {
-                const statusBadge = o.status === 'gathered' ? 
-                    '<span class="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-medium">Gesammelt</span>' : 
-                    '<span class="px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 text-xs font-medium">Wird gesucht</span>';
-
-                return `
-                    <tr class="hover:bg-white/5 transition-colors">
-                        <td class="py-4 px-6 font-medium text-slate-200">${escapeHtml(o.itemName)}</td>
-                        <td class="py-4 px-6 font-mono text-emerald-400">${escapeHtml(o.quantity)}</td>
-                        <td class="py-4 px-6 text-slate-400 text-xs">${escapeHtml(o.category || 'Allgemein')}</td>
-                        <td class="py-4 px-6 text-slate-400 text-xs">${escapeHtml(o.requester)}</td>
-                        <td class="py-4 px-6">${statusBadge}</td>
-                        <td class="py-4 px-6 text-right">
-                            <div class="flex items-center justify-end gap-2">
-                                <button onclick="toggleOrderStatus('${o.id}', '${o.status}')" title="Status wechseln" class="p-2 rounded-lg bg-minecraft-dark border border-minecraft-border text-slate-300 hover:text-emerald-400 text-xs">
-                                    <i class="fa-solid fa-arrow-rotate-right"></i>
-                                </button>
-                                <button onclick="deleteOrder('${o.id}')" title="Löschen" class="p-2 rounded-lg bg-minecraft-dark border border-minecraft-border text-slate-400 hover:text-red-400 text-xs">
-                                    <i class="fa-solid fa-trash"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
-        }
-
-        window.openNewOrderModal = function() {
-            showModal(`
-                <h3 class="font-bold text-lg mb-4 flex items-center gap-2"><i class="fa-solid fa-box-open text-emerald-400"></i> Item anfordern</h3>
-                <form id="new-order-form" class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Item-Name</label>
-                        <input type="text" id="order-item" required placeholder="z.B. Diamanten, Eichenholz, Netherite" class="w-full bg-minecraft-dark border border-minecraft-border rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Menge</label>
-                        <input type="text" id="order-qty" required placeholder="z.B. 2 Stacks, 64 Stück" class="w-full bg-minecraft-dark border border-minecraft-border rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Kategorie</label>
-                        <select id="order-category" class="w-full bg-minecraft-dark border border-minecraft-border rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
-                            <option value="Blöcke & Baumaterial">Blöcke & Baumaterial</option>
-                            <option value="Erze & Mineralien">Erze & Mineralien</option>
-                            <option value="Nahrung & Landwirtschaft">Nahrung & Landwirtschaft</option>
-                            <option value="Mob-Drops & Sonstiges">Mob-Drops & Sonstiges</option>
-                        </select>
-                    </div>
-                    <div class="flex justify-end gap-3 mt-6">
-                        <button type="button" onclick="closeModal()" class="px-4 py-2 rounded-xl text-sm bg-minecraft-dark border border-minecraft-border text-slate-300">Abbrechen</button>
-                        <button type="submit" class="px-4 py-2 rounded-xl text-sm bg-emerald-600 hover:bg-emerald-500 text-white font-medium">Anfordern</button>
-                    </div>
-                </form>
-            `);
-
-            document.getElementById('new-order-form').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const itemName = document.getElementById('order-item').value;
-                const quantity = document.getElementById('order-qty').value;
-                const category = document.getElementById('order-category').value;
-
-                try {
-                    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'orders'), {
-                        itemName, quantity, category,
-                        requester: currentUser.ign,
-                        status: 'needed',
-                        createdAt: new Date().toISOString()
-                    });
-                    closeModal();
-                    showToast("Bestellung hinzugefügt!", "success");
-                } catch (err) {
-                    console.error("Error adding order:", err);
-                    showToast("Fehler beim Hinzufügen der Bestellung.", "error");
-                }
-            });
-        }
-
-        window.toggleOrderStatus = async function(orderId, currentStatus) {
-            const newStatus = currentStatus === 'needed' ? 'gathered' : 'needed';
-            try {
-                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'orders', orderId), { status: newStatus });
-            } catch (err) {
-                console.error("Error updating order status:", err);
-            }
-        }
-
-        window.deleteOrder = async function(orderId) {
-            if (confirmCustom("Möchtest du diese Bestellung löschen?")) {
-                try {
-                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'orders', orderId));
-                    showToast("Bestellung gelöscht.", "info");
-                } catch (err) {
-                    console.error("Error deleting order:", err);
-                }
-            }
-        }
-
-        // --- GALLERY LOGIC ---
-        window.renderGallery = function() {
-            const grid = document.getElementById('gallery-grid');
-            if (!grid) return;
-
-            if (galleryData.length === 0) {
-                grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-500 text-sm">Noch keine Bilder in der Galerie.</div>`;
-                return;
-            }
-
-            grid.innerHTML = galleryData.map(img => `
-                <div class="bg-minecraft-card border border-minecraft-border rounded-2xl overflow-hidden shadow-sm flex flex-col justify-between">
-                    <div>
-                        <img src="${escapeHtml(img.imageUrl)}" alt="${escapeHtml(img.title)}" class="w-full h-48 object-cover" onerror="this.src='https://placehold.co/600x400/121214/10b981?text=Bild+Nicht+Verfügbar'">
-                        <div class="p-4">
-                            <h3 class="font-bold text-base mb-1">${escapeHtml(img.title)}</h3>
-                            <p class="text-xs text-slate-400">${escapeHtml(img.description || '')}</p>
-                        </div>
-                    </div>
-                    <div class="px-4 py-3 border-t border-minecraft-border/60 bg-minecraft-dark/30 flex items-center justify-between text-xs">
-                        <span class="text-slate-500">Von: <strong class="text-slate-300">${escapeHtml(img.author)}</strong></span>
-                        <button onclick="deleteGalleryItem('${img.id}')" class="text-slate-500 hover:text-red-400">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
+                    <div class="pt-3 border-t border-dark-border flex items-center justify-between text-[11px] text-slate-500">
+                        <span class="flex items-center gap-1"><img src="https://mc-heads.net/avatar/${p.author}/16" class="w-4 h-4 rounded"> ${p.author}</span>
+                        ${isCloudMode ? `<button onclick="deleteDoc('projects', '${p.id}')" class="text-slate-500 hover:text-red-400"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>` : ''}
                     </div>
                 </div>
             `).join('');
+            lucide.createIcons();
         }
 
-        window.openNewGalleryModal = function() {
-            showModal(`
-                <h3 class="font-bold text-lg mb-4 flex items-center gap-2"><i class="fa-solid fa-images text-emerald-400"></i> Bild teilen</h3>
-                <form id="new-gallery-form" class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Bildtitel</label>
-                        <input type="text" id="gallery-title" required placeholder="z.B. Unsere Spawn-Stadt bei Nacht" class="w-full bg-minecraft-dark border border-minecraft-border rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Bild URL</label>
-                        <input type="url" id="gallery-url" required placeholder="https://imgur.com/..." class="w-full bg-minecraft-dark border border-minecraft-border rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Beschreibung (optional)</label>
-                        <input type="text" id="gallery-desc" placeholder="Kurzer Kommentar..." class="w-full bg-minecraft-dark border border-minecraft-border rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
-                    </div>
-                    <div class="flex justify-end gap-3 mt-6">
-                        <button type="button" onclick="closeModal()" class="px-4 py-2 rounded-xl text-sm bg-minecraft-dark border border-minecraft-border text-slate-300">Abbrechen</button>
-                        <button type="submit" class="px-4 py-2 rounded-xl text-sm bg-emerald-600 hover:bg-emerald-500 text-white font-medium">Hochladen</button>
-                    </div>
-                </form>
-            `);
+        // ITEMS
+        async function saveItem(e) {
+            e.preventDefault();
+            const name = document.getElementById('item-name').value;
+            const amount = document.getElementById('item-amount').value;
+            const itemData = { name, amount, author: currentUser.ign, status: 'Offen', createdAt: new Date() };
 
-            document.getElementById('new-gallery-form').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const title = document.getElementById('gallery-title').value;
-                const imageUrl = document.getElementById('gallery-url').value;
-                const description = document.getElementById('gallery-desc').value;
-
-                try {
-                    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'gallery'), {
-                        title, imageUrl, description,
-                        author: currentUser.ign,
-                        createdAt: new Date().toISOString()
-                    });
-                    closeModal();
-                    showToast("Bild erfolgreich geteilt!", "success");
-                } catch (err) {
-                    console.error("Error adding gallery item:", err);
-                    showToast("Fehler beim Hochladen des Bildes.", "error");
-                }
-            });
+            if (isCloudMode) {
+                await db.collection('items').add(itemData);
+            } else {
+                localItems.push({ id: Date.now().toString(), ...itemData });
+                localStorage.setItem('gundihub_items', JSON.stringify(localItems));
+                renderItems();
+            }
+            closeModal('item-modal');
+            e.target.reset();
         }
 
-        window.deleteGalleryItem = async function(id) {
-            if (confirmCustom("Möchtest du dieses Bild löschen?")) {
-                try {
-                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'gallery', id));
-                    showToast("Bild gelöscht.", "info");
-                } catch (err) {
-                    console.error("Error deleting gallery item:", err);
-                }
+        async function toggleItemStatus(id, currentStatus) {
+            const newStatus = currentStatus === 'Offen' ? 'In Arbeit' : currentStatus === 'In Arbeit' ? 'Geliefert' : 'Offen';
+            if (isCloudMode) {
+                await db.collection('items').doc(id).update({ status: newStatus });
+            } else {
+                const item = localItems.find(i => i.id === id);
+                if (item) { item.status = newStatus; localStorage.setItem('gundihub_items', JSON.stringify(localItems)); renderItems(); }
             }
         }
 
-        // --- MEMBERS LOGIC ---
-        function renderMembers() {
-            const grid = document.getElementById('members-grid');
-            if (!grid) return;
-
-            if (usersData.length === 0) {
-                grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-500 text-sm">Keine Mitglieder gefunden.</div>`;
+        function renderItems() {
+            const list = document.getElementById('items-list');
+            if (localItems.length === 0) {
+                list.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-500 text-xs italic">Keine Item-Bestellungen offen.</td></tr>`;
                 return;
             }
-
-            grid.innerHTML = usersData.map(u => `
-                <div class="bg-minecraft-card border border-minecraft-border rounded-2xl p-4 flex items-center gap-3 shadow-sm">
-                    <img src="https://mc-heads.net/avatar/${encodeURIComponent(u.ign)}/64" alt="${escapeHtml(u.ign)}" class="w-10 h-10 rounded-xl bg-minecraft-dark border border-minecraft-border">
-                    <div>
-                        <h4 class="font-bold text-sm text-slate-200">${escapeHtml(u.ign)}</h4>
-                        <span class="text-xs text-emerald-400 flex items-center gap-1 mt-0.5">
-                            <i class="fa-solid fa-circle text-[8px]"></i> Online
+            list.innerHTML = localItems.map(i => `
+                <tr class="hover:bg-dark-input/30 transition">
+                    <td class="p-4 font-semibold text-white">${i.name}</td>
+                    <td class="p-4 text-slate-300">${i.amount}</td>
+                    <td class="p-4 text-slate-400 flex items-center gap-1.5"><img src="https://mc-heads.net/avatar/${i.author}/16" class="w-4 h-4 rounded"> ${i.author}</td>
+                    <td class="p-4">
+                        <span class="px-2 py-1 rounded-full text-[10px] font-semibold ${i.status === 'Geliefert' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : i.status === 'In Arbeit' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-slate-500/10 text-slate-400 border border-slate-500/20'}">
+                            ${i.status}
                         </span>
+                    </td>
+                    <td class="p-4 text-right">
+                        <button onclick="toggleItemStatus('${i.id}', '${i.status}')" class="text-xs text-brand-500 hover:underline">Status ändern</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // GALLERY
+        async function saveGallery(e) {
+            e.preventDefault();
+            const title = document.getElementById('gallery-title').value;
+            const url = document.getElementById('gallery-url').value;
+            const galleryData = { title, url, author: currentUser.ign, createdAt: new Date() };
+
+            if (isCloudMode) {
+                await db.collection('gallery').add(galleryData);
+            } else {
+                localGallery.push({ id: Date.now().toString(), ...galleryData });
+                localStorage.setItem('gundihub_gallery', JSON.stringify(localGallery));
+                renderGallery();
+            }
+            closeModal('gallery-modal');
+            e.target.reset();
+        }
+
+        function renderGallery() {
+            const list = document.getElementById('gallery-list');
+            if (localGallery.length === 0) {
+                list.innerHTML = `<p class="text-slate-500 text-xs italic col-span-full">Keine Inspirationsbilder vorhanden.</p>`;
+                return;
+            }
+            list.innerHTML = localGallery.map(g => `
+                <div class="bg-dark-card border border-dark-border rounded-2xl overflow-hidden shadow-lg group">
+                    <div class="h-40 bg-dark-input overflow-hidden relative">
+                        <img src="${g.url}" alt="${g.title}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" onerror="this.src='https://placehold.co/400x300/1e293b/white?text=Bild+Fehler'">
+                    </div>
+                    <div class="p-3">
+                        <h4 class="font-bold text-white text-xs truncate">${g.title}</h4>
+                        <p class="text-[10px] text-slate-500 mt-1 flex items-center gap-1"><img src="https://mc-heads.net/avatar/${g.author}/14" class="w-3.5 h-3.5 rounded"> von ${g.author}</p>
                     </div>
                 </div>
             `).join('');
         }
 
-        // --- UI HELPERS ---
-        function showModal(htmlContent) {
-            const modal = document.getElementById('custom-modal');
-            const content = document.getElementById('modal-content');
-            content.innerHTML = htmlContent;
-            modal.classList.remove('hidden');
+        async function deleteDoc(coll, id) {
+            if (confirm("Wirklich löschen?")) {
+                await db.collection(coll).doc(id).delete();
+            }
         }
-
-        window.closeModal = function() {
-            document.getElementById('custom-modal').classList.add('hidden');
-        }
-
-        function confirmCustom(message) {
-            // Simple confirmation wrapper since alert/confirm are disallowed
-            return window.confirm(message);
-        }
-
-        function showToast(message, type = 'success') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            
-            const bgColor = type === 'success' ? 'bg-emerald-600 text-white' : type === 'error' ? 'bg-red-600 text-white' : 'bg-slate-800 text-slate-200';
-            toast.className = `${bgColor} px-4 py-3 rounded-xl shadow-xl text-sm font-medium pointer-events-auto flex items-center gap-3 transition-all duration-300 opacity-0 translate-y-2`;
-            
-            const icon = type === 'success' ? 'fa-circle-check' : type === 'error' ? 'fa-circle-exclamation' : 'fa-circle-info';
-            toast.innerHTML = `<i class="fa-solid ${icon}"></i><span>${escapeHtml(message)}</span>`;
-
-            container.appendChild(toast);
-            setTimeout(() => {
-                toast.classList.remove('opacity-0', 'translate-y-2');
-            }, 10);
-
-            setTimeout(() => {
-                toast.classList.add('opacity-0', 'translate-y-2');
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
-        }
-
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
-        }
-
-        // Run initialization on load
-        window.onload = initFirebase;
     </script>
 </body>
 </html>
