@@ -281,7 +281,7 @@
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
                         <h2 class="text-2xl font-extrabold text-white">Item-Bestellungen & Ressourcen</h2>
-                        <p class="text-xs text-slate-400 mt-1">Spezifische Materialwünsche für Farmen und Bauwerke</p>
+                        <p class="text-xs text-slate-400 mt-1">Spezifische Materialwünsche (Gelieferte Items verschwinden nach 1 Stunde automatisch)</p>
                     </div>
                     <button onclick="openModal('item-modal')" class="bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold px-5 py-3 rounded-xl mc-btn transition flex items-center justify-center gap-2 shadow-lg shadow-brand-600/20">
                         <i data-lucide="plus" class="w-4 h-4"></i> Spezifische Bestellung aufgeben
@@ -294,7 +294,8 @@
                             <thead>
                                 <tr class="bg-dark-input/80 text-slate-400 text-xs font-bold uppercase tracking-wider border-b border-dark-border">
                                     <th class="p-5">Spezifisches Item</th>
-                                    <th class="p-5">Menge / Details</th>
+                                    <th class="p-5">Menge</th>
+                                    <th class="p-5">Verwendungszweck / Für wen</th>
                                     <th class="p-5">Besteller</th>
                                     <th class="p-5">Status</th>
                                     <th class="p-5 text-right">Aktion</th>
@@ -377,8 +378,12 @@
                     <input type="text" id="item-name" required placeholder="z.B. Netherit-Barren, Eichenstämme" class="w-full bg-dark-input border border-dark-border rounded-xl px-4 py-2.5 text-white placeholder-slate-600 focus:outline-none focus:border-brand-500 transition">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">Spezifische Menge / Einheit</label>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">Menge / Einheit</label>
                     <input type="text" id="item-amount" required placeholder="z.B. Genau 3 Stacks & 12 Stück" class="w-full bg-dark-input border border-dark-border rounded-xl px-4 py-2.5 text-white placeholder-slate-600 focus:outline-none focus:border-brand-500 transition">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">Verwendungszweck / Für wen?</label>
+                    <input type="text" id="item-target" required placeholder="z.B. Gundi Hub oder für Spieler Bqen_" class="w-full bg-dark-input border border-dark-border rounded-xl px-4 py-2.5 text-white placeholder-slate-600 focus:outline-none focus:border-brand-500 transition">
                 </div>
                 <div class="flex justify-end gap-3 pt-4 border-t border-dark-border">
                     <button type="button" onclick="closeModal('item-modal')" class="px-5 py-2.5 text-xs font-bold text-slate-400 hover:text-white transition">Abbrechen</button>
@@ -562,7 +567,20 @@
                     renderAll();
                 });
                 db.collection('items').onSnapshot(snapshot => {
-                    localItems = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    let now = new Date();
+                    localItems = [];
+                    snapshot.docs.forEach(doc => {
+                        let data = doc.data();
+                        // Prüfen ob geliefert und älter als 1 Stunde -> automatisch löschen
+                        if (data.status === 'Geliefert' && data.deliveredAt) {
+                            let deliveredTime = data.deliveredAt.toDate ? data.deliveredAt.toDate() : new Date(data.deliveredAt);
+                            if (now - deliveredTime > 3600000) { // 3600000ms = 1 Stunde
+                                db.collection('items').doc(doc.id).delete();
+                                return; // Nicht anzeigen / direkt löschen
+                            }
+                        }
+                        localItems.push({ id: doc.id, ...data });
+                    });
                     renderAll();
                 });
                 db.collection('gallery').onSnapshot(snapshot => {
@@ -570,8 +588,17 @@
                     renderAll();
                 });
             } else {
+                let now = new Date();
+                let storedItems = JSON.parse(localStorage.getItem('gundihub_items') || '[]');
+                localItems = storedItems.filter(i => {
+                    if (i.status === 'Geliefert' && i.deliveredAt) {
+                        if (now - new Date(i.deliveredAt) > 3600000) return false;
+                    }
+                    return true;
+                });
+                localStorage.setItem('gundihub_items', JSON.stringify(localItems));
+
                 localProjects = JSON.parse(localStorage.getItem('gundihub_projects') || '[]');
-                localItems = JSON.parse(localStorage.getItem('gundihub_items') || '[]');
                 localGallery = JSON.parse(localStorage.getItem('gundihub_gallery') || '[]');
                 renderAll();
             }
@@ -612,7 +639,7 @@
                     <div class="bg-dark-input/50 border border-dark-border p-3 rounded-2xl flex items-center justify-between">
                         <div>
                             <h4 class="font-bold text-white text-xs">${i.name} <span class="text-slate-400 font-normal">(${i.amount})</span></h4>
-                            <p class="text-[10px] text-slate-400 mt-0.5">Von ${i.author}</p>
+                            <p class="text-[10px] text-slate-400 mt-0.5">Für: ${i.target} | Von ${i.author}</p>
                         </div>
                         <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${i.status === 'Geliefert' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : i.status === 'In Arbeit' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-slate-500/10 text-slate-400 border border-slate-500/20'}">${i.status}</span>
                     </div>
@@ -704,7 +731,8 @@
             e.preventDefault();
             const name = document.getElementById('item-name').value;
             const amount = document.getElementById('item-amount').value;
-            const itemData = { name, amount, author: currentUser.ign, status: 'Offen', createdAt: new Date() };
+            const target = document.getElementById('item-target').value;
+            const itemData = { name, amount, target, author: currentUser.ign, status: 'Offen', createdAt: new Date(), deliveredAt: null };
 
             if (isCloudMode) {
                 await db.collection('items').add(itemData);
@@ -718,25 +746,33 @@
         }
 
         async function toggleItemStatus(id, currentStatus) {
-            const newStatus = currentStatus === 'Offen' ? 'In Arbeit' : currentStatus === 'In Arbeit' ? 'Geliefert' : 'Offen';
+            let newStatus = currentStatus === 'Offen' ? 'In Arbeit' : currentStatus === 'In Arbeit' ? 'Geliefert' : 'Offen';
+            let deliveredAt = newStatus === 'Geliefert' ? new Date() : null;
+
             if (isCloudMode) {
-                await db.collection('items').doc(id).update({ status: newStatus });
+                await db.collection('items').doc(id).update({ status: newStatus, deliveredAt: deliveredAt });
             } else {
                 const item = localItems.find(i => i.id === id);
-                if (item) { item.status = newStatus; localStorage.setItem('gundihub_items', JSON.stringify(localItems)); renderAll(); }
+                if (item) { 
+                    item.status = newStatus; 
+                    item.deliveredAt = deliveredAt; 
+                    localStorage.setItem('gundihub_items', JSON.stringify(localItems)); 
+                    renderAll(); 
+                }
             }
         }
 
         function renderItems() {
             const list = document.getElementById('items-list');
             if (localItems.length === 0) {
-                list.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-500 text-xs italic">Keine spezifischen Item-Bestellungen vorhanden.</td></tr>`;
+                list.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-500 text-xs italic">Keine spezifischen Item-Bestellungen vorhanden.</td></tr>`;
                 return;
             }
             list.innerHTML = localItems.map(i => `
                 <tr class="hover:bg-dark-input/50 transition">
                     <td class="p-5 font-bold text-white">${i.name}</td>
                     <td class="p-5 text-slate-300 font-mono text-xs">${i.amount}</td>
+                    <td class="p-5 text-slate-300"><span class="bg-brand-500/10 text-brand-400 px-2.5 py-1 rounded-lg border border-brand-500/20 text-xs font-semibold">${i.target || 'Gundi Hub'}</span></td>
                     <td class="p-5 text-slate-300 flex items-center gap-2"><img src="https://mc-heads.net/avatar/${i.author}/18" class="w-5 h-5 rounded-md"> ${i.author}</td>
                     <td class="p-5">
                         <span class="px-3 py-1 rounded-full text-xs font-bold ${i.status === 'Geliefert' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : i.status === 'In Arbeit' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-slate-500/10 text-slate-400 border border-slate-500/20'}">
