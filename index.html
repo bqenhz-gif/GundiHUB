@@ -281,7 +281,7 @@
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
                         <h2 class="text-2xl font-extrabold text-white">Item-Bestellungen & Ressourcen</h2>
-                        <p class="text-xs text-slate-400 mt-1">Spezifische Materialwünsche (Gelieferte Items verschwinden nach 1 Stunde automatisch)</p>
+                        <p class="text-xs text-slate-400 mt-1">Spezifische Materialwünsche (Gelieferte Items verschwinden nach 1 Stunde automatisch oder können sofort gelöscht werden)</p>
                     </div>
                     <button onclick="openModal('item-modal')" class="bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold px-5 py-3 rounded-xl mc-btn transition flex items-center justify-center gap-2 shadow-lg shadow-brand-600/20">
                         <i data-lucide="plus" class="w-4 h-4"></i> Spezifische Bestellung aufgeben
@@ -352,7 +352,6 @@
                 <div>
                     <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">Screenshot / Materialbild auswählen</label>
                     <input type="file" id="project-file" accept="image/*" class="w-full bg-dark-input border border-dark-border rounded-xl px-3 py-2 text-xs text-slate-300 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-brand-600 file:text-white hover:file:bg-brand-500 cursor-pointer">
-                    <p class="text-[10px] text-slate-500 mt-1">Wähle einfach deinen Minecraft-Screenshot aus.</p>
                 </div>
                 <div>
                     <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">Aufgaben (Kommagetrennt)</label>
@@ -384,7 +383,7 @@
                 </div>
                 <div>
                     <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">Verwendungszweck / Für wen?</label>
-                    <input type="text" id="item-target" required placeholder="z.B. Gundi Hub oder für Spieler Bqen_" class="w-full bg-dark-input border border-dark-border rounded-xl px-4 py-2.5 text-white placeholder-slate-600 focus:outline-none focus:border-brand-500 transition">
+                    <input type="text" id="item-target" required placeholder="z.B. Gundi Hub oder Spieler Bqen_" class="w-full bg-dark-input border border-dark-border rounded-xl px-4 py-2.5 text-white placeholder-slate-600 focus:outline-none focus:border-brand-500 transition">
                 </div>
                 <div class="flex justify-end gap-3 pt-4 border-t border-dark-border">
                     <button type="button" onclick="closeModal('item-modal')" class="px-5 py-2.5 text-xs font-bold text-slate-400 hover:text-white transition">Abbrechen</button>
@@ -455,7 +454,6 @@
             }
         });
 
-        // HILFSFUNKTION: Bild zu ImgBB hochladen
         async function uploadImageToCloud(fileInput) {
             if (!fileInput.files || !fileInput.files[0]) return null;
             const file = fileInput.files[0];
@@ -463,7 +461,6 @@
             formData.append('image', file);
 
             try {
-                // Nutzung der öffentlichen ImgBB API für kostenlosen Bild-Upload
                 const res = await fetch('https://api.imgbb.com/1/upload?key=81c305a41be7495b6cbe19e7eb9ddc1e', {
                     method: 'POST',
                     body: formData
@@ -810,11 +807,13 @@
                             ${i.status}
                         </span>
                     </td>
-                    <td class="p-5 text-right">
+                    <td class="p-5 text-right flex items-center justify-end gap-3">
                         <button onclick="toggleItemStatus('${i.id}', '${i.status}')" class="text-xs font-bold text-brand-400 hover:underline bg-brand-500/10 px-3 py-1.5 rounded-xl border border-brand-500/20 transition">Status ändern</button>
+                        <button onclick="deleteDoc('items', '${i.id}')" class="text-slate-500 hover:text-red-400 p-1.5 rounded-lg hover:bg-red-500/10 transition" title="Bestellung sofort löschen"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                     </td>
                 </tr>
             `).join('');
+            lucide.createIcons();
         }
 
         async function saveGallery(e) {
@@ -869,7 +868,18 @@
 
         async function deleteDoc(coll, id) {
             if (confirm("Möchtest du diesen Eintrag wirklich löschen?")) {
-                await db.collection(coll).doc(id).delete();
+                if (isCloudMode) {
+                    await db.collection(coll).doc(id).delete();
+                } else {
+                    if (coll === 'items') {
+                        localItems = localItems.filter(i => i.id !== id);
+                        localStorage.setItem('gundihub_items', JSON.stringify(localItems));
+                    } else if (coll === 'projects') {
+                        localProjects = localProjects.filter(p => p.id !== id);
+                        localStorage.setItem('gundihub_projects', JSON.stringify(localProjects));
+                    }
+                    renderAll();
+                }
             }
         }
     </script>
