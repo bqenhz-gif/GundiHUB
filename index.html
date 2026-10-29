@@ -350,8 +350,9 @@
                     <textarea id="project-desc" rows="3" placeholder="Kurze Details zum Bauvorhaben..." class="w-full bg-dark-input border border-dark-border rounded-xl px-4 py-2.5 text-white placeholder-slate-600 focus:outline-none focus:border-brand-500 transition custom-scrollbar"></textarea>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">Bild-URL für benötigte Materialien / Vorlage (optional)</label>
-                    <input type="url" id="project-mat-image" placeholder="https://beispiel.de/materialbild.png" class="w-full bg-dark-input border border-dark-border rounded-xl px-4 py-2.5 text-white placeholder-slate-600 focus:outline-none focus:border-brand-500 transition">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">Screenshot / Materialbild auswählen</label>
+                    <input type="file" id="project-file" accept="image/*" class="w-full bg-dark-input border border-dark-border rounded-xl px-3 py-2 text-xs text-slate-300 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-brand-600 file:text-white hover:file:bg-brand-500 cursor-pointer">
+                    <p class="text-[10px] text-slate-500 mt-1">Wähle einfach deinen Minecraft-Screenshot aus.</p>
                 </div>
                 <div>
                     <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">Aufgaben (Kommagetrennt)</label>
@@ -359,7 +360,7 @@
                 </div>
                 <div class="flex justify-end gap-3 pt-4 border-t border-dark-border">
                     <button type="button" onclick="closeModal('project-modal')" class="px-5 py-2.5 text-xs font-bold text-slate-400 hover:text-white transition">Abbrechen</button>
-                    <button type="submit" class="bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold px-6 py-2.5 rounded-xl mc-btn shadow-md">Projekt speichern</button>
+                    <button type="submit" id="project-submit-btn" class="bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold px-6 py-2.5 rounded-xl mc-btn shadow-md">Projekt speichern</button>
                 </div>
             </form>
         </div>
@@ -406,12 +407,12 @@
                     <input type="text" id="gallery-title" required placeholder="z.B. Mittelalterlicher Turm" class="w-full bg-dark-input border border-dark-border rounded-xl px-4 py-2.5 text-white placeholder-slate-600 focus:outline-none focus:border-brand-500 transition">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">Bild-URL (Direktlink)</label>
-                    <input type="url" id="gallery-url" required placeholder="https://..." class="w-full bg-dark-input border border-dark-border rounded-xl px-4 py-2.5 text-white placeholder-slate-600 focus:outline-none focus:border-brand-500 transition">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">Screenshot auswählen</label>
+                    <input type="file" id="gallery-file" accept="image/*" required class="w-full bg-dark-input border border-dark-border rounded-xl px-3 py-2 text-xs text-slate-300 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-brand-600 file:text-white hover:file:bg-brand-500 cursor-pointer">
                 </div>
                 <div class="flex justify-end gap-3 pt-4 border-t border-dark-border">
                     <button type="button" onclick="closeModal('gallery-modal')" class="px-5 py-2.5 text-xs font-bold text-slate-400 hover:text-white transition">Abbrechen</button>
-                    <button type="submit" class="bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold px-6 py-2.5 rounded-xl mc-btn shadow-md">Bild hinzufügen</button>
+                    <button type="submit" id="gallery-submit-btn" class="bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold px-6 py-2.5 rounded-xl mc-btn shadow-md">Bild hinzufügen</button>
                 </div>
             </form>
         </div>
@@ -453,6 +454,29 @@
                 showApp();
             }
         });
+
+        // HILFSFUNKTION: Bild zu ImgBB hochladen
+        async function uploadImageToCloud(fileInput) {
+            if (!fileInput.files || !fileInput.files[0]) return null;
+            const file = fileInput.files[0];
+            const formData = new FormData();
+            formData.append('image', file);
+
+            try {
+                // Nutzung der öffentlichen ImgBB API für kostenlosen Bild-Upload
+                const res = await fetch('https://api.imgbb.com/1/upload?key=81c305a41be7495b6cbe19e7eb9ddc1e', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                if (data && data.data && data.data.url) {
+                    return data.data.url;
+                }
+            } catch(e) {
+                console.error("Upload Fehler:", e);
+            }
+            return null;
+        }
 
         async function handleLogin(e) {
             e.preventDefault();
@@ -571,12 +595,11 @@
                     localItems = [];
                     snapshot.docs.forEach(doc => {
                         let data = doc.data();
-                        // Prüfen ob geliefert und älter als 1 Stunde -> automatisch löschen
                         if (data.status === 'Geliefert' && data.deliveredAt) {
                             let deliveredTime = data.deliveredAt.toDate ? data.deliveredAt.toDate() : new Date(data.deliveredAt);
-                            if (now - deliveredTime > 3600000) { // 3600000ms = 1 Stunde
+                            if (now - deliveredTime > 3600000) {
                                 db.collection('items').doc(doc.id).delete();
-                                return; // Nicht anzeigen / direkt löschen
+                                return;
                             }
                         }
                         localItems.push({ id: doc.id, ...data });
@@ -649,14 +672,20 @@
 
         async function saveProject(e) {
             e.preventDefault();
+            const submitBtn = document.getElementById('project-submit-btn');
+            submitBtn.textContent = 'Lädt hoch...';
+            submitBtn.disabled = true;
+
             const title = document.getElementById('project-title').value;
             const coords = document.getElementById('project-coords').value;
             const desc = document.getElementById('project-desc').value;
-            const matImage = document.getElementById('project-mat-image').value;
+            const fileInput = document.getElementById('project-file');
             const tasksRaw = document.getElementById('project-tasks').value;
 
+            let matImage = await uploadImageToCloud(fileInput);
+
             const tasks = tasksRaw ? tasksRaw.split(',').map(t => ({ text: t.trim(), done: false })) : [];
-            const projectData = { title, coords, desc, matImage, tasks, author: currentUser.ign, createdAt: new Date() };
+            const projectData = { title, coords, desc, matImage: matImage || '', tasks, author: currentUser.ign, createdAt: new Date() };
 
             if (isCloudMode) {
                 await db.collection('projects').add(projectData);
@@ -666,6 +695,8 @@
                 renderAll();
             }
 
+            submitBtn.textContent = 'Projekt speichern';
+            submitBtn.disabled = false;
             closeModal('project-modal');
             e.target.reset();
         }
@@ -700,9 +731,9 @@
                         
                         ${p.matImage ? `
                             <div class="mb-4">
-                                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1.5">Benötigte Materialien:</span>
-                                <div class="h-32 bg-dark-input rounded-2xl overflow-hidden border border-dark-border">
-                                    <img src="${p.matImage}" alt="Materialien" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/400x200/131c31/white?text=Bild-Fehler'">
+                                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1.5">Screenshot / Materialbild:</span>
+                                <div class="h-40 bg-dark-input rounded-2xl overflow-hidden border border-dark-border">
+                                    <img src="${p.matImage}" alt="Screenshot" class="w-full h-full object-cover cursor-pointer hover:scale-105 transition" onclick="window.open('${p.matImage}', '_blank')">
                                 </div>
                             </div>
                         ` : ''}
@@ -788,17 +819,31 @@
 
         async function saveGallery(e) {
             e.preventDefault();
-            const title = document.getElementById('gallery-title').value;
-            const url = document.getElementById('gallery-url').value;
-            const galleryData = { title, url, author: currentUser.ign, createdAt: new Date() };
+            const submitBtn = document.getElementById('gallery-submit-btn');
+            submitBtn.textContent = 'Lädt hoch...';
+            submitBtn.disabled = true;
 
-            if (isCloudMode) {
-                await db.collection('gallery').add(galleryData);
+            const title = document.getElementById('gallery-title').value;
+            const fileInput = document.getElementById('gallery-file');
+
+            let url = await uploadImageToCloud(fileInput);
+
+            if (url) {
+                const galleryData = { title, url, author: currentUser.ign, createdAt: new Date() };
+
+                if (isCloudMode) {
+                    await db.collection('gallery').add(galleryData);
+                } else {
+                    localGallery.push({ id: Date.now().toString(), ...galleryData });
+                    localStorage.setItem('gundihub_gallery', JSON.stringify(localGallery));
+                    renderAll();
+                }
             } else {
-                localGallery.push({ id: Date.now().toString(), ...galleryData });
-                localStorage.setItem('gundihub_gallery', JSON.stringify(localGallery));
-                renderAll();
+                alert("Fehler beim Hochladen des Bildes.");
             }
+
+            submitBtn.textContent = 'Bild hinzufügen';
+            submitBtn.disabled = false;
             closeModal('gallery-modal');
             e.target.reset();
         }
@@ -812,7 +857,7 @@
             list.innerHTML = localGallery.map(g => `
                 <div class="bg-dark-card border border-dark-border rounded-3xl overflow-hidden shadow-xl group">
                     <div class="h-44 bg-dark-input overflow-hidden relative">
-                        <img src="${g.url}" alt="${g.title}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" onerror="this.src='https://placehold.co/400x300/131c31/white?text=Bild+Fehler'">
+                        <img src="${g.url}" alt="${g.title}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300 cursor-pointer" onclick="window.open('${g.url}', '_blank')">
                     </div>
                     <div class="p-4">
                         <h4 class="font-bold text-white text-xs truncate">${g.title}</h4>
